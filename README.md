@@ -5,7 +5,7 @@
 •	Sophie Hariri 40281961 user name: soha1105 Lab Section FK-X<br />
 •	Pawan Kumar Gupta 40254781<br />
 •	Zeynep Ozcan, 40309273 username: Zeynep-Ozcan1 Lab Section FM-X<br />
-•	Shadman Chowdhury 40286231 Lab Section FK-X<br />
+•	Shadman Chowdhury 40286231 user name: shad2512 Lab Section FK-X<br />
 •	Gracie Idonije 40279628 Lab Section FT-X<br />
 •	Joshua Vilda, 4082320, username: Josh-Vilda Lab Section FK-X<br />
 
