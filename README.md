@@ -6,7 +6,7 @@ Sophie Hariri 40281961 Lab Section FK-X
 Pawan Kumar Gupta 40254781
 Zeynep Ozcan 40309273 Lab Section FM-X
 Shadman Chowdhury 40286231 Lab Section FK-X
-
+Gracie Idonije 40279628 Lab Section FT-X
 
 
 ##### to edit
