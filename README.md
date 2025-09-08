@@ -1,8 +1,8 @@
 # 404_Found-SOEN341_Project_F25
 
-Matthew Lunt 40137949 Lab Section FK-X
+Matthew Lunt 40137949 Lab Section FK-X 
 Kruti Patel 40259909 Lab Section FK-X
-Sophie Hariri 40281961 Lab Section FK-X
+Sophie Hariri 40281961 user name: soha1105 Lab Section FK-X
 Pawan Kumar Gupta 40254781
 Zeynep Ozcan 40309273 Lab Section FM-X
 Shadman Chowdhury 40286231 Lab Section FK-X
