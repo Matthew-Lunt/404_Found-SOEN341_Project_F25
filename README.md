@@ -1,9 +1,10 @@
 # 404_Found-SOEN341_Project_F25
 
 Matthew Lunt 40137949
-Kruti Patel 40259909
+Kruti Patel 40259909 Lab Section
 Sophie Hariri 40281961
 Pawan Kumar Gupta 40254781
+Zeynep Ozcan 40309273
 
 
 
