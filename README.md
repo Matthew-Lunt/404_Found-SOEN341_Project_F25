@@ -5,7 +5,7 @@ Kruti Patel 40259909 Lab Section
 Sophie Hariri 40281961
 Pawan Kumar Gupta 40254781
 Zeynep Ozcan 40309273
-
+Shadman Chowdhury 40286231 Lab Section FK-X
 
 
 
