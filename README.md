@@ -7,7 +7,7 @@
 •	Zeynep Ozcan 40309273 Lab Section FM-X<br />
 •	Shadman Chowdhury 40286231 Lab Section FK-X<br />
 •	Gracie Idonije 40279628 Lab Section FT-X<br />
-•	Joshua Vilda, username: Josh-Vilda, 4082320 Lab Section FK-X<br />
+•	Joshua Vilda, 4082320, username: Josh-Vilda Lab Section FK-X<br />
 
 
 ##### to edit
