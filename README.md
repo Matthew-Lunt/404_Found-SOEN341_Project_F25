@@ -6,7 +6,7 @@
 •	Pawan Kumar Gupta, 40254781    <br />
 •	Zeynep Ozcan, 40309273       username: Zeynep-Ozcan1  Lab Section FM-X <br />
 •	Shadman Chowdhury, 40286231  username: shad2512       Lab Section FK-X <br />
-•	Gracie Idonije, 40279628                              Lab Section FT-X <br />
+•	Gracie Idonije, 40279628     username: Gracieidj      Lab Section FT-X <br />
 •	Joshua Vilda, 4082320        username: Josh-Vilda     Lab Section FK-X <br />
 
 
