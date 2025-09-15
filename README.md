@@ -1,6 +1,6 @@
 # 404_Found-SOEN341_Project_F25
 
-•	Matthew Lunt, 40137949 <br \t> username: Matthew-Lunt   Lab Section FK-X <br />
+•	Matthew Lunt, 40137949 "\t" username: Matthew-Lunt   Lab Section FK-X <br />
 •	Kruti Patel, 40259909        username: kruti172       Lab Section FK-X <br />
 •	Sophie Hariri, 40281961      username: soha1105       Lab Section FK-X <br />
 •	Pawan Kumar Gupta, 40254781    <br />
