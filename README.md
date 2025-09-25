@@ -16,5 +16,6 @@
 
 # Langauges
 •	Java script<br />
-•	HTML
+•	HTML<br />
+•	Firebase will be used for our backend
 
