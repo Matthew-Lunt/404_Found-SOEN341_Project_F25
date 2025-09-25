@@ -18,9 +18,10 @@
 In this project we will experience software development skills. We will use the Agile Scrum technique, which breaks the project down into four sprints, or incremental delivery and utilize wikis, software feature requests, task management, continuous integration, GitHub distributed version control, access control, and bug tracking to enhance our project management process.  
 
 # Core Features
-Core Feature #1: Student Event Experience
-Core Feature #2: Organizer Event Management
-Core Feature #3: Administrator Dashboard & Moderation
+Core Feature #1: Student Event Experience<br />
+Core Feature #2: Organizer Event Management<br />
+Core Feature #3: Administrator Dashboard & Moderation<br />
+Core Feature #4: Friends' Event Attendance 
 
 # Langauges
 •	Java script<br />
