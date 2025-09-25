@@ -27,3 +27,5 @@ Core Feature #3: Administrator Dashboard & Moderation
 •	HTML<br />
 •	Firebase will be used for our backend
 
+# Techniques
+•	TBD
