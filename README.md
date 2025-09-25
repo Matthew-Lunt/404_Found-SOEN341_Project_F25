@@ -15,6 +15,6 @@
 •	We will implement a friends feature for the application that will allow users to see event history and upcoming events they are attending. This will also show which of your friends will be attending an event when looking at the event page.<br />
 
 # Langauges
-•	Java script
+•	Java script<br />
 •	HTML
 
