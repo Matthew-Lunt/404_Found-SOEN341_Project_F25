@@ -11,4 +11,5 @@
 
 
 •	We will be creating a web application to show campus events and manage ticket purchasing. This will be to increase student engagement and help them learn about, plan and attend the events on or around campus. The main functionality of this application will be to allow browsing of events, save events the student is interested in, purchase or claim tickets and generate QR codes to check in at the event. <br />
-•	There will be three account types: Administrator, which deals with moderation and oversees organizations. Organization accounts, which can create and manage events, track attendance, and view analytics. User accounts, which will hold past event data and hold a point system for discounts or pormotions when they accumulate enough.<br />
+•	There will be three account types: Administrator, which deals with moderation and oversees organizations. Organization accounts, which can create and manage events, track attendance, and view analytics. User accounts, which will hold past event data.<br />
+•	We will implement a friends feature for the application that will allow users to see event history and upcoming events they are attending. This will also show which of your friends will be attending an event when looking at the event page.<br />
