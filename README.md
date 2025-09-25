@@ -14,6 +14,14 @@
 •	There will be three account types: Administrator, which deals with moderation and oversees organizations. Organization accounts, which can create and manage events, track attendance, and view analytics. User accounts, which will hold past event data.<br />
 •	We will implement a friends feature for the application that will allow users to see event history and upcoming events they are attending. This will also show which of your friends will be attending an event when looking at the event page.<br />
 
+# Objectives
+In this project we will experience software development skills. We will use the Agile Scrum technique, which breaks the project down into four sprints, or incremental delivery and utilize wikis, software feature requests, task management, continuous integration, GitHub distributed version control, access control, and bug tracking to enhance our project management process.  
+
+# Core Features
+Core Feature #1: Student Event Experience
+Core Feature #2: Organizer Event Management
+Core Feature #3: Administrator Dashboard & Moderation
+
 # Langauges
 •	Java script<br />
 •	HTML<br />
