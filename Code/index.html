@@ -20,6 +20,43 @@
 </header>
 
 
+<form id="filterForm">
+  
+  <input type="text" placeholder="Search events...">
+  <a href="SearchResults.html">
+    <button type="button">Search</button>
+  </a>
+
+  <label for="date">Date:</label> <!-- Filter for date-->
+  <input type="date" id="date">
+
+  <label for="time">Time of Day:</label> <!-- Filter for Time of day-->
+  <select id="time">
+    <option value="">Any</option>
+    <option value="morning">Morning</option>
+    <option value="afternoon">Afternoon</option>
+    <option value="evening">Evening</option>
+  </select>
+
+  <label for="price">Price:</label>  <!-- Filter for Price - choice between free and paid-->
+  <select id="price">
+    <option value="">Any</option>
+    <option value="free">Free</option>
+    <option value="paid">Paid</option>
+  </select>
+
+  <label for="location">Location:</label>   <!-- Filter for Location-->
+  <input type="text" id="location" placeholder="Enter city or venue">
+
+  <button type="button" id="searchBtn">Search</button>
+</form>
+
+<a href="SearchResults.html" class="search-btn">Search</a>
+
+<!-- Results section -->
+<div id="results"></div>
+
+
 <section class="hero">
   <h2>Find Your Next Event</h2>
   <p>Concerts, Sports, Festivals, and more!</p>
