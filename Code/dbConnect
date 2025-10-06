@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User Profile</title>
+</head>
+<body>
+    <h1>Create Your User Profile</h1>
+
+    <button id="signInAnonButton">Sign In Anonymously (for demo)</button>
+    <br><br>
+    <input type="text" id="userName" placeholder="Your Name">
+    <button id="createProfileButton" disabled>Create Profile</button>
+    <p id="statusMessage"></p>
+
+    <!-- Firebase SDKs - make sure these are loaded from a CDN or your build process -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4", // Replace with your actual API Key
+            authDomain: "found-5ecc0.firebaseapp.com",
+            projectId: "found-5ecc0",
+            storageBucket: "found-5ecc0.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const signInAnonButton = document.getElementById('signInAnonButton');
+        const userNameInput = document.getElementById('userName');
+        const createProfileButton = document.getElementById('createProfileButton');
+        const statusMessage = document.getElementById('statusMessage');
+
+        let currentUser = null;
+
+        // Listen for authentication state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                statusMessage.textContent = `Signed in as: ${user.uid}`;
+                createProfileButton.disabled = false;
+            } else {
+                currentUser = null;
+                statusMessage.textContent = 'Not signed in.';
+                createProfileButton.disabled = true;
+            }
+        });
+
+        // Sign in anonymously for demo purposes
+        signInAnonButton.addEventListener('click', async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Error signing in anonymously:", error);
+                statusMessage.textContent = `Error signing in: ${error.message}`;
+            }
+        });
+
+        // Create profile document
+        createProfileButton.addEventListener('click', async () => {
+            if (!currentUser) {
+                statusMessage.textContent = "Please sign in first!";
+                return;
+            }
+
+            const name = userNameInput.value.trim();
+            if (!name) {
+                statusMessage.textContent = "Please enter a name.";
+                return;
+            }
+
+            const userDocRef = doc(db, 'users', currentUser.uid); // Use user's UID as document ID
+
+            try {
+                await setDoc(userDocRef, {
+                    name: name,
+                    email: currentUser.email || 'anonymous@example.com', // If anonymous, email might be null
+                    createdAt: new Date(),
+                    uid: currentUser.uid
+                });
+                statusMessage.textContent = `Profile created successfully for ${name}!`;
+                console.log("Document written with ID: ", currentUser.uid);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                statusMessage.textContent = `Error creating profile: ${e.message}`;
+            }
+        });
+
+    </script>
+</body>
+</html>
