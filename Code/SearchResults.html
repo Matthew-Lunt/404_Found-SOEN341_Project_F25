@@ -1,14 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Search Results</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
 
-    <body>
-        <h1> Your search results</h1>
-        <p> All the results that match your search appear here.</p>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container header-content">
+            <h1 class="logo">404TicketsFound</h1>
+            <nav>
+                <a href="#events">Events</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Filter Form Section -->
+    <section class="section container">
+        <h2 class="section-title">Filter Events</h2>
+        <form id="filter-form" class="form">
+            <!-- Input fields for filtering events -->
+            <input type="text" id="location" placeholder="Location">
+            <input type="text" id="organization" placeholder="Organization">
+            <input type="number" id="minPrice" placeholder="Min Price">
+            <input type="number" id="maxPrice" placeholder="Max Price">
+            <select id="type">
+                <option value="">All Types</option>
+                <option value="Concert">Concert</option>
+                <option value="Festival">Festival</option>
+                <option value="Sports">Sports</option>
+            </select>
+            <!-- Submit button triggers filtering -->
+            <button type="submit" class="btn-primary">Filter</button>
+        </form>
+    </section>
+
+    <!-- Events Display Section -->
+    <section id="events" class="section container">
+        <!-- Heading updates dynamically based on filtering -->
+        <h2 id="results-title" class="section-title">All Events</h2>
+        <!-- Container for event cards -->
+        <div id="results" class="grid"></div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript for Filtering Logic -->
+    <script>
+        // Array of events with details
+        const events = [
+            { name: "Rock Concert", location: "Montreal", organization: "LiveNation", price: 50, type: "Concert", date: "Oct 15, 2025" },
+            { name: "Food Festival", location: "Toronto", organization: "FoodieEvents", price: 25, type: "Festival", date: "Nov 2, 2025" },
+            { name: "Hockey Game", location: "Vancouver", organization: "SportsCorp", price: 75, type: "Sports", date: "Dec 12, 2025" },
+            { name: "Jazz Night", location: "Montreal", organization: "JazzClub", price: 40, type: "Concert", date: "Nov 20, 2025" },
+            { name: "Wine Festival", location: "Toronto", organization: "WineWorld", price: 60, type: "Festival", date: "Dec 5, 2025" }
+        ];
+
+        // References to DOM elements
+        const form = document.getElementById("filter-form");
+        const resultsDiv = document.getElementById("results");
+        const resultsTitle = document.getElementById("results-title");
+
+        /**
+         * Function to display a list of events in the results container
+         * @param {Array} list - Array of event objects to display
+         */
+        function displayEvents(list) {
+            // Clear previous results
+            resultsDiv.innerHTML = "";
+
+            // Show message if no events match
+            if (list.length === 0) {
+                resultsDiv.innerHTML = "<p>No events match your filter.</p>";
+                return;
+            }
+
+            // Create and append event cards
+            list.forEach(event => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <h4>${event.name}</h4>
+                    <p>📍 ${event.location}</p>
+                    <p>🏢 ${event.organization}</p>
+                    <p>📅 ${event.date}</p>
+                    <p>💵 $${event.price}</p>
+                    <p>🎟️ ${event.type}</p>
+                    <button class="btn-primary">Buy Ticket</button>
+                `;
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        // Display all events initially when page loads
+        displayEvents(events);
+
+        // Event listener for the filter form submission
+        form.addEventListener("submit", (e) => {
+            e.preventDefault(); // Prevent form from refreshing the page
+
+            // Get values from filter inputs
+            const location = document.getElementById("location").value.toLowerCase();
+            const organization = document.getElementById("organization").value.toLowerCase();
+            const minPrice = parseFloat(document.getElementById("minPrice").value) || 0;
+            const maxPrice = parseFloat(document.getElementById("maxPrice").value) || Infinity;
+            const type = document.getElementById("type").value;
+
+            // Filter events based on user input
+            const filtered = events.filter(event => {
+                return (
+                    event.location.toLowerCase().includes(location) &&
+                    event.organization.toLowerCase().includes(organization) &&
+                    event.price >= minPrice &&
+                    event.price <= maxPrice &&
+                    (type === "" || event.type === type)
+                );
+            });
+
+            // Update heading after filtering
+            resultsTitle.textContent = "Your Search Results";
+
+            // Display filtered events
+            displayEvents(filtered);
+        });
+    </script>
+</body>
+
 </html>
