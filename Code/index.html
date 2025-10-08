@@ -14,7 +14,7 @@
     <nav>
       <a href="#events">Events</a>
       <a href="#contact">Contact</a>
-      <button id="loginBtn" class="btn-secondary">Login</button>
+      <a href="404NotFoundLogin.html" class="btn-secondary">Login</a>
     </nav>
   </div>
 </header>
@@ -63,7 +63,6 @@
   <a href="#events" class="btn-primary">Browse Tickets</a>
 </section>
 
-
 <section id="events" class="container section">
   <h3 class="section-title">Upcoming Events</h3>
   <div class="grid">
@@ -102,30 +101,5 @@
   <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
 </footer>
 
-
-<div id="loginModal" class="modal">
-  <div class="modal-content">
-    <button id="closeModal" class="close-btn">&times;</button>
-    <h3>Login</h3>
-    <form class="form">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <button type="submit" class="btn-primary">Login</button>
-    </form>
-    <p class="signup-text">Don’t have an account? <a href="#">Sign Up</a></p>
-  </div>
-</div>
-
-<script>
-  const loginBtn = document.getElementById('loginBtn');
-  const loginModal = document.getElementById('loginModal');
-  const closeModal = document.getElementById('closeModal');
-
-  loginBtn.addEventListener('click', () => loginModal.classList.add('active'));
-  closeModal.addEventListener('click', () => loginModal.classList.remove('active'));
-  window.addEventListener('click', (e) => {
-    if (e.target === loginModal) loginModal.classList.remove('active');
-  });
-</script>
 </body>
 </html>
