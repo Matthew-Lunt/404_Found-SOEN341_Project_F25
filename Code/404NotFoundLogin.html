@@ -64,11 +64,29 @@
       cursor: pointer;
       text-decoration: underline;
     }
+
+    /* Go Back button styling */
+    .back-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background-color: #ddd;
+      color: #333;
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: background 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background-color: #ccc;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2 id="form-title">Login</h2>
+
     <form id="login-form">
       <input type="email" placeholder="Email" required />
       <input type="password" placeholder="Password" required />
@@ -83,6 +101,9 @@
     </form>
 
     <p class="toggle-link" id="toggle-form">Don’t have an account? Sign Up</p>
+
+    <!-- 🡠 Go Back Button -->
+    <a href="index.html" class="back-btn">← Go Back</a>
   </div>
 
   <script>
