@@ -9,7 +9,24 @@
 •	Gracie Idonije, 40279628     Username: Gracieidj      Lab Section FT-X <br />
 •	Joshua Vilda, 4082320        Username: Josh-Vilda     Lab Section FK-X <br />
 
-
+# Description
 •	We will be creating a web application to show campus events and manage ticket purchasing. This will be to increase student engagement and help them learn about, plan and attend the events on or around campus. The main functionality of this application will be to allow browsing of events, save events the student is interested in, purchase or claim tickets and generate QR codes to check in at the event. <br />
 •	There will be three account types: Administrator, which deals with moderation and oversees organizations. Organization accounts, which can create and manage events, track attendance, and view analytics. User accounts, which will hold past event data.<br />
 •	We will implement a friends feature for the application that will allow users to see event history and upcoming events they are attending. This will also show which of your friends will be attending an event when looking at the event page.<br />
+
+# Objectives
+In this project we will gain software development skills. We will use the Agile Scrum technique, which breaks the project down into four sprints, or incremental delivery and utilize wikis, software feature requests, task management, continuous integration, GitHub distributed version control, access control, and bug tracking to enhance our project management process.  
+
+# Core Features
+Core Feature #1: Student Event Experience<br />
+Core Feature #2: Organizer Event Management<br />
+Core Feature #3: Administrator Dashboard & Moderation<br />
+Core Feature #4: Friends' Event Attendance 
+
+# Langauges
+•	Java script<br />
+•	HTML<br />
+•	Firebase (backend)
+
+# Techniques
+•	TBD
