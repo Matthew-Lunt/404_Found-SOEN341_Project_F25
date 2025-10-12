@@ -1,51 +1,71 @@
 // Example event data
 const events = [
-    {
-        name: "Rock Concert", ticketsSold: 120, capacity: 200, attendees: 100, revenue: 6000
-    },
-    {
-        name: "Food Festival", ticketsSold: 80, capacity: 150, attendees: 75, revenue: 2000
-    },
-    {
-        name: "Hockey Game", ticketsSold: 200, capacity: 250, attendees: 180, revenue: 15000
-    }
+    { name: "Rock Concert", type: "Concert", date: "2025-10-10", ticketsSold: 120, capacity: 200, attendees: 100, revenue: 6000 },
+    { name: "Food Festival", type: "Festival", date: "2025-11-11", ticketsSold: 80, capacity: 150, attendees: 75, revenue: 2000 },
+    { name: "Hockey Game", type: "Sports", date: "2025-12-12", ticketsSold: 200, capacity: 250, attendees: 180, revenue: 15000 }
 ];
 
-// Populate dropdown
+// References
 const eventSelect = document.getElementById('eventSelect');
-events.forEach((event, index) => {
-    const option = document.createElement('option');
-    option.value = index;
-    option.textContent = event.name;
-    eventSelect.appendChild(option);
-});
-
-// References to charts
+const metrics = document.getElementById('metrics');
+const charts = document.getElementById('charts');
 let ticketsChart, attendanceChart;
 
-// Event listener for dropdown
-eventSelect.addEventListener('change', () => {
-    const selectedIndex = eventSelect.value;
-    if (selectedIndex === "") {
-        // Hide everything if no event selected
-        document.getElementById('metrics').style.display = 'none';
-        document.getElementById('charts').style.display = 'none';
+// Filter elements
+const filterDate = document.getElementById('filterDate');
+const filterType = document.getElementById('filterType');
+
+// Populate dropdown based on filtered list
+function populateDropdown(filteredEvents) {
+    eventSelect.innerHTML = ""; // Clear dropdown
+
+    if (filteredEvents.length === 0) {
+        const option = document.createElement('option');
+        option.textContent = "No matching events";
+        option.disabled = true;
+        eventSelect.appendChild(option);
         return;
     }
 
-    const event = events[selectedIndex];
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = "--Choose Event--";
+    eventSelect.appendChild(defaultOption);
 
-    // Show metric cards and charts
-    document.getElementById('metrics').style.display = 'grid';
-    document.getElementById('charts').style.display = 'grid';
+    filteredEvents.forEach((event, index) => {
+        const option = document.createElement('option');
+        option.value = events.indexOf(event); // Keep reference to original array
+        option.textContent = event.name;
+        eventSelect.appendChild(option);
+    });
+}
 
-    // Update metric cards
-    document.getElementById('ticketsSold').textContent = event.ticketsSold;
-    document.getElementById('remainingCapacity').textContent = event.capacity - event.ticketsSold;
-    document.getElementById('attendees').textContent = event.attendees;
-    document.getElementById('revenue').textContent = `$${event.revenue}`;
+// Initial population
+populateDropdown(events);
 
-    // Tickets Chart
+// Filter function
+function applyFilters() {
+    const selectedDate = filterDate.value;
+    const selectedType = filterType.value;
+
+    const filtered = events.filter(event => {
+        const dateMatch = !selectedDate || event.date === selectedDate;
+        const typeMatch = !selectedType || event.type === selectedType;
+        return dateMatch && typeMatch;
+    });
+
+    populateDropdown(filtered);
+
+    metrics.style.display = 'none';
+    charts.style.display = 'none';
+}
+
+// Event listeners for filters
+filterDate.addEventListener('change', applyFilters);
+filterType.addEventListener('change', applyFilters);
+
+// Function to update charts
+function updateCharts(event) {
     const ticketsCtx = document.getElementById('ticketsChart').getContext('2d');
     if (ticketsChart) ticketsChart.destroy();
     ticketsChart = new Chart(ticketsCtx, {
@@ -62,19 +82,12 @@ eventSelect.addEventListener('change', () => {
             responsive: true,
             plugins: {
                 legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'Ticket Sales Overview',
-                    font: { size: 16 }
-                }
+                title: { display: true, text: 'Ticket Sales Overview', font: { size: 16 } }
             },
-            scales: {
-                y: { beginAtZero: true }
-            }
+            scales: { y: { beginAtZero: true } }
         }
     });
 
-    // Attendance Chart
     const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
     if (attendanceChart) attendanceChart.destroy();
     attendanceChart = new Chart(attendanceCtx, {
@@ -90,12 +103,29 @@ eventSelect.addEventListener('change', () => {
         options: {
             responsive: true,
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Attendance Breakdown',
-                    font: { size: 16 }
-                }
+                title: { display: true, text: 'Attendance Breakdown', font: { size: 16 } }
             }
         }
     });
+}
+
+// Event listener for dropdown
+eventSelect.addEventListener('change', () => {
+    const selectedIndex = eventSelect.value;
+    if (selectedIndex === "") {
+        metrics.style.display = 'none';
+        charts.style.display = 'none';
+        return;
+    }
+
+    const event = events[selectedIndex];
+
+    metrics.style.display = 'grid';
+    charts.style.display = 'grid';
+    document.getElementById('ticketsSold').textContent = event.ticketsSold;
+    document.getElementById('remainingCapacity').textContent = event.capacity - event.ticketsSold;
+    document.getElementById('attendees').textContent = event.attendees;
+    document.getElementById('revenue').textContent = `$${event.revenue}`;
+
+    updateCharts(event);
 });
