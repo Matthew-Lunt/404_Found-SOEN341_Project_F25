@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Analytics Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- For charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Dashboard specific styles */
         #eventSelectContainer {
@@ -78,6 +78,25 @@
         footer {
             margin-top: auto;
         }
+
+        /* Filters */
+        #filters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #filters input,
+        #filters select {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        label {
+            margin-right: 5px;
+        }
     </style>
 </head>
 
@@ -96,6 +115,23 @@
         <div id="welcomeCard">
             <h3>Welcome Back, Organizer!</h3>
             <p>View your event analytics and performance below.</p>
+        </div>
+
+        <!-- Filters -->
+        <div id="filters">
+            <div>
+                <label for="filterDate">Filter by Date:</label>
+                <input type="date" id="filterDate">
+            </div>
+            <div>
+                <label for="filterType">Filter by Event Type:</label>
+                <select id="filterType">
+                    <option value="">All</option>
+                    <option value="Concert">Concert</option>
+                    <option value="Festival">Festival</option>
+                    <option value="Sports">Sports</option>
+                </select>
+            </div>
         </div>
 
         <div id="eventSelectContainer">
