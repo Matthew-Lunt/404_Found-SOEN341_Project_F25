@@ -1,137 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="EN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Results</title>
+  <link rel="stylesheet" href="css/homepage.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
-
 <body>
-    <!-- Header Section -->
-    <header>
-        <div class="container header-content">
-            <h1 class="logo">404TicketsFound</h1>
-            <nav>
-                <a href="#events">Events</a>
-                <a href="#contact">Contact</a>
-            </nav>
+
+<header>
+  <div class="container header-content">
+    <h1 class="logo">404TicketsFound</h1>
+    <nav>
+      <a href="index.html#events">Events</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="section container">
+  <h2 class="section-title">Filter Events</h2>
+  <form id="filter-form" class="form" style="gap:8px;display:flex;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="location" placeholder="Location">
+    <input type="text" id="organization" placeholder="Organization">
+    <input type="number" id="minPrice" placeholder="Min Price">
+    <input type="number" id="maxPrice" placeholder="Max Price">
+    <select id="type">
+      <option value="">All Types</option>
+      <option value="Concert">Concert</option>
+      <option value="Festival">Festival</option>
+      <option value="Sports">Sports</option>
+    </select>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="date" id="eventDate" disabled>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="allDates" checked>
+        All dates
+      </label>
+    </div>
+    <button type="submit" class="btn-primary">Filter</button>
+  </form>
+</section>
+
+<section id="events" class="section container">
+  <h2 id="results-title" class="section-title">All Events</h2>
+  <div id="results" class="grid"></div>
+</section>
+
+<footer>
+  <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+</footer>
+
+<div id="ticketModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <button class="close-btn" style="float:right;">&times;</button>
+    <h3>Your Ticket</h3>
+    <div id="qrContainer" style="display:flex;justify-content:center;margin:10px 0;"></div>
+    <p id="ticketMeta" style="text-align:center;font-size:14px;"></p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn-primary" id="downloadPngBtn">Download Ticket (PNG)</button>
+      <button class="btn-secondary" id="downloadIcsBtn">Add to Calendar (.ics)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const events = [
+    { name: "Rock Concert", location: "Montreal, QC", organization: "LiveNation", price: 50, type: "Concert", date: "2025-10-15", start: "2025-10-15T19:00:00-04:00", end: "2025-10-15T22:00:00-04:00" },
+    { name: "Food Festival", location: "Toronto, ON", organization: "FoodieEvents", price: 25, type: "Festival", date: "2025-11-02", start: "2025-11-02T11:00:00-04:00", end: "2025-11-02T18:00:00-04:00" },
+    { name: "Hockey Game", location: "Vancouver, BC", organization: "SportsCorp", price: 75, type: "Sports", date: "2025-12-12", start: "2025-12-12T19:30:00-08:00", end: "2025-12-12T22:00:00-08:00" },
+    { name: "Basketball Match", location: "Ottawa, ON", organization: "NBA", price: 45, type: "Sports", date: "2025-10-28", start: "2025-10-28T18:00:00-04:00", end: "2025-10-28T21:00:00-04:00" },
+    { name: "Jazz Night", location: "Quebec City, QC", organization: "BlueNote Productions", price: 0, type: "Concert", date: "2025-11-18", start: "2025-11-18T20:00:00-05:00", end: "2025-11-18T23:00:00-05:00" },
+    { name: "Winter Carnival", location: "Calgary, AB", organization: "CityFest", price: 0, type: "Festival", date: "2025-12-05", start: "2025-12-05T10:00:00-07:00", end: "2025-12-05T20:00:00-07:00" }
+  ];
+
+  const form=document.getElementById("filter-form");
+  const resultsDiv=document.getElementById("results");
+  const resultsTitle=document.getElementById("results-title");
+  const eventDateEl=document.getElementById("eventDate");
+  const allDatesEl=document.getElementById("allDates");
+
+  allDatesEl.addEventListener("change",()=>{
+    const useAll=allDatesEl.checked;
+    eventDateEl.disabled=useAll;
+    if(useAll)eventDateEl.value="";
+  });
+
+  function cardHTML(ev){
+    const formattedDate=new Date(ev.date).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});
+    const ticketButton=ev.price===0
+      ? `<button class="btn-primary claim-btn" data-type="FREE" data-name="${ev.name}">Claim Free</button>`
+      : `<button class="btn-primary claim-btn" data-type="MOCKPAID" data-name="${ev.name}">Mock Paid</button>`;
+    return `
+      <div class="card">
+        <h4>${ev.name}</h4>
+        <p>📍 ${ev.location}</p>
+        <p>🏢 ${ev.organization}</p>
+        <p>📅 ${formattedDate}</p>
+        <p>💵 ${ev.price===0?"Free":"$"+ev.price}</p>
+        <p>🎟️ ${ev.type}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+          ${ticketButton}
+          <button class="btn-secondary cal-btn" data-name="${ev.name}">Add to Calendar</button>
         </div>
-    </header>
+      </div>`;
+  }
 
-    <!-- Filter Form Section -->
-    <section class="section container">
-        <h2 class="section-title">Filter Events</h2>
-        <form id="filter-form" class="form">
-            <!-- Input fields for filtering events -->
-            <input type="text" id="location" placeholder="Location">
-            <input type="text" id="organization" placeholder="Organization">
-            <input type="number" id="minPrice" placeholder="Min Price">
-            <input type="number" id="maxPrice" placeholder="Max Price">
-            <select id="type">
-                <option value="">All Types</option>
-                <option value="Concert">Concert</option>
-                <option value="Festival">Festival</option>
-                <option value="Sports">Sports</option>
-            </select>
-            <!-- Submit button triggers filtering -->
-            <button type="submit" class="btn-primary">Filter</button>
-        </form>
-    </section>
+  function displayEvents(list){resultsDiv.innerHTML=list.map(cardHTML).join("");}
+  displayEvents(events);
 
-    <!-- Events Display Section -->
-    <section id="events" class="section container">
-        <!-- Heading updates dynamically based on filtering -->
-        <h2 id="results-title" class="section-title">All Events</h2>
-        <!-- Container for event cards -->
-        <div id="results" class="grid"></div>
-    </section>
+  form.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const location=document.getElementById("location").value.toLowerCase();
+    const organization=document.getElementById("organization").value.toLowerCase();
+    const minPrice=parseFloat(document.getElementById("minPrice").value)||0;
+    const maxPrice=parseFloat(document.getElementById("maxPrice").value)||Infinity;
+    const type=document.getElementById("type").value;
+    const allDates=allDatesEl.checked;
+    const eventDate=eventDateEl.value;
+    const filtered=events.filter(ev=>{
+      const matchesLocation=ev.location.toLowerCase().includes(location);
+      const matchesOrg=ev.organization.toLowerCase().includes(organization);
+      const matchesPrice=ev.price>=minPrice&&ev.price<=maxPrice;
+      const matchesType=type===""||ev.type===type;
+      const matchesDate=allDates||eventDate===""||ev.date===eventDate;
+      return matchesLocation&&matchesOrg&&matchesPrice&&matchesType&&matchesDate;
+    });
+    resultsTitle.textContent="Your Search Results";
+    displayEvents(filtered);
+  });
 
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
-    </footer>
+  const ticketModal=document.getElementById('ticketModal');
+  const qrContainer=document.getElementById('qrContainer');
+  const ticketMeta=document.getElementById('ticketMeta');
 
-    <!-- JavaScript for Filtering Logic -->
-    <script>
-        // Array of events with details
-        const events = [
-            { name: "Rock Concert", location: "Montreal", organization: "LiveNation", price: 50, type: "Concert", date: "Oct 15, 2025" },
-            { name: "Food Festival", location: "Toronto", organization: "FoodieEvents", price: 25, type: "Festival", date: "Nov 2, 2025" },
-            { name: "Hockey Game", location: "Vancouver", organization: "SportsCorp", price: 75, type: "Sports", date: "Dec 12, 2025" },
-            { name: "Jazz Night", location: "Montreal", organization: "JazzClub", price: 40, type: "Concert", date: "Nov 20, 2025" },
-            { name: "Wine Festival", location: "Toronto", organization: "WineWorld", price: 60, type: "Festival", date: "Dec 5, 2025" }
-        ];
+  function pad(n){return String(n).padStart(2,'0');}
+  function toICSDate(dtStr){
+    const d=new Date(dtStr);
+    return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z';
+  }
+  function downloadICS(ev){
+    const uid='evt-'+Math.random().toString(36).slice(2)+'@404ticketsfound';
+    const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//404TicketsFound//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+toICSDate(new Date().toISOString()),'DTSTART:'+toICSDate(ev.start),'DTEND:'+toICSDate(ev.end),'SUMMARY:'+ev.name.replace(/[,;]/g,' '),'LOCATION:'+ev.location.replace(/[,;]/g,' '),'DESCRIPTION:Ticketed via 404TicketsFound','END:VEVENT','END:VCALENDAR'];
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=ev.name.replace(/\s+/g,'_')+'.ics';
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
 
-        // References to DOM elements
-        const form = document.getElementById("filter-form");
-        const resultsDiv = document.getElementById("results");
-        const resultsTitle = document.getElementById("results-title");
+  function openTicketModal(ev,type){
+    ticketModal.style.display='block';
+    qrContainer.innerHTML='';
+    const rand=Math.floor(Math.random()*9000)+1000;
+    const code=`TICKET-${rand}-${type}`;
+    new QRCode(qrContainer,{text:code,width:200,height:200,correctLevel:QRCode.CorrectLevel.H});
+    ticketMeta.textContent=`${ev.name} • ${ev.location} • ${code}`;
+    document.getElementById('downloadIcsBtn').onclick=()=>downloadICS(ev);
+    document.getElementById('downloadPngBtn').onclick=()=>{
+      const canvas=qrContainer.querySelector('canvas');
+      if(canvas){
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='white';
+        ctx.fillRect(canvas.width/2-30,canvas.height/2-30,60,60);
+        ctx.fillStyle='black';
+        ctx.font='bold 18px Arial';
+        ctx.textAlign='center';
+        ctx.fillText('TIX',canvas.width/2,canvas.height/2+6);
+        const a=document.createElement('a');
+        a.href=canvas.toDataURL('image/png');
+        a.download=`${code}.png`;
+        a.click();
+      }
+    };
+  }
 
-        /**
-         * Function to display a list of events in the results container
-         * @param {Array} list - Array of event objects to display
-         */
-        function displayEvents(list) {
-            // Clear previous results
-            resultsDiv.innerHTML = "";
+  document.querySelector('.close-btn').onclick=()=>ticketModal.style.display='none';
+  window.onclick=e=>{if(e.target===ticketModal)ticketModal.style.display='none';};
+  resultsDiv.addEventListener('click',e=>{
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    const name=btn.getAttribute('data-name');
+    const ev=events.find(x=>x.name===name);
+    if(!ev)return;
+    if(btn.classList.contains('cal-btn'))downloadICS(ev);
+    if(btn.classList.contains('claim-btn'))openTicketModal(ev,btn.getAttribute('data-type'));
+  });
+</script>
 
-            // Show message if no events match
-            if (list.length === 0) {
-                resultsDiv.innerHTML = "<p>No events match your filter.</p>";
-                return;
-            }
-
-            // Create and append event cards
-            list.forEach(event => {
-                const card = document.createElement("div");
-                card.className = "card";
-                card.innerHTML = `
-                    <h4>${event.name}</h4>
-                    <p>📍 ${event.location}</p>
-                    <p>🏢 ${event.organization}</p>
-                    <p>📅 ${event.date}</p>
-                    <p>💵 $${event.price}</p>
-                    <p>🎟️ ${event.type}</p>
-                    <button class="btn-primary">Buy Ticket</button>
-                `;
-                resultsDiv.appendChild(card);
-            });
-        }
-
-        // Display all events initially when page loads
-        displayEvents(events);
-
-        // Event listener for the filter form submission
-        form.addEventListener("submit", (e) => {
-            e.preventDefault(); // Prevent form from refreshing the page
-
-            // Get values from filter inputs
-            const location = document.getElementById("location").value.toLowerCase();
-            const organization = document.getElementById("organization").value.toLowerCase();
-            const minPrice = parseFloat(document.getElementById("minPrice").value) || 0;
-            const maxPrice = parseFloat(document.getElementById("maxPrice").value) || Infinity;
-            const type = document.getElementById("type").value;
-
-            // Filter events based on user input
-            const filtered = events.filter(event => {
-                return (
-                    event.location.toLowerCase().includes(location) &&
-                    event.organization.toLowerCase().includes(organization) &&
-                    event.price >= minPrice &&
-                    event.price <= maxPrice &&
-                    (type === "" || event.type === type)
-                );
-            });
-
-            // Update heading after filtering
-            resultsTitle.textContent = "Your Search Results";
-
-            // Display filtered events
-            displayEvents(filtered);
-        });
-    </script>
 </body>
-
 </html>
