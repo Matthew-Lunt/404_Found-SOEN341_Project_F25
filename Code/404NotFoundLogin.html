@@ -81,6 +81,31 @@
     .back-btn:hover {
       background-color: #ccc;
     }
+
+    /* Toggle button for account type */
+    #type-account {
+      display: flex;
+      justify-content: space-between;
+      background: #eee;
+      border-radius: 30px;
+      padding: 5px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .toggle-option {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 25px;
+      transition: background 0.3s, color 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .toggle-option.active {
+      background: #912338;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -88,15 +113,21 @@
     <h2 id="form-title">Login</h2>
 
     <form id="login-form">
-      <input type="email" placeholder="Email" required >
-      <input type="password" placeholder="Password" required >
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
       <button type="submit">Login</button>
     </form>
 
     <form id="signup-form" style="display: none;">
-      <input type="text" placeholder="Full Name" required >
-      <input type="email" placeholder="Email" required >
-      <input type="password" placeholder="Password" required >
+      <!-- 🔘 Account Type Toggle -->
+      <div id="type-account">
+        <div class="toggle-option active" data-type="user">User Account</div>
+        <div class="toggle-option" data-type="organizer">Organizer Account</div>
+      </div>
+
+      <input type="text" placeholder="Full Name" required>
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
       <button type="submit">Sign Up</button>
     </form>
 
@@ -112,6 +143,7 @@
     const toggleText = document.getElementById("toggle-form");
     const title = document.getElementById("form-title");
 
+    // Switch between Login and Signup forms
     toggleText.addEventListener("click", () => {
       if (loginForm.style.display === "none") {
         loginForm.style.display = "flex";
@@ -126,15 +158,29 @@
       }
     });
 
-    // Demo handling (no backend)
+    // Demo login handling
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
       alert("Logged in (demo only)");
     });
 
+    // Signup handling + account type
+    const toggleWrapper = document.getElementById("type-account");
+    const options = toggleWrapper.querySelectorAll(".toggle-option");
+    let accountType = "user"; // Default
+
+    options.forEach(option => {
+      option.addEventListener("click", () => {
+        options.forEach(opt => opt.classList.remove("active"));
+        option.classList.add("active");
+        accountType = option.dataset.type;
+        console.log("Selected account type:", accountType);
+      });
+    });
+
     signupForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      alert("Account created (demo only)");
+      alert(`Account created as ${accountType.toUpperCase()} (demo only)`);
     });
   </script>
 </body>
