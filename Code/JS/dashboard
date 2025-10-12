@@ -1,0 +1,101 @@
+// Example event data
+const events = [
+    {
+        name: "Rock Concert", ticketsSold: 120, capacity: 200, attendees: 100, revenue: 6000
+    },
+    {
+        name: "Food Festival", ticketsSold: 80, capacity: 150, attendees: 75, revenue: 2000
+    },
+    {
+        name: "Hockey Game", ticketsSold: 200, capacity: 250, attendees: 180, revenue: 15000
+    }
+];
+
+// Populate dropdown
+const eventSelect = document.getElementById('eventSelect');
+events.forEach((event, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = event.name;
+    eventSelect.appendChild(option);
+});
+
+// References to charts
+let ticketsChart, attendanceChart;
+
+// Event listener for dropdown
+eventSelect.addEventListener('change', () => {
+    const selectedIndex = eventSelect.value;
+    if (selectedIndex === "") {
+        // Hide everything if no event selected
+        document.getElementById('metrics').style.display = 'none';
+        document.getElementById('charts').style.display = 'none';
+        return;
+    }
+
+    const event = events[selectedIndex];
+
+    // Show metric cards and charts
+    document.getElementById('metrics').style.display = 'grid';
+    document.getElementById('charts').style.display = 'grid';
+
+    // Update metric cards
+    document.getElementById('ticketsSold').textContent = event.ticketsSold;
+    document.getElementById('remainingCapacity').textContent = event.capacity - event.ticketsSold;
+    document.getElementById('attendees').textContent = event.attendees;
+    document.getElementById('revenue').textContent = `$${event.revenue}`;
+
+    // Tickets Chart
+    const ticketsCtx = document.getElementById('ticketsChart').getContext('2d');
+    if (ticketsChart) ticketsChart.destroy();
+    ticketsChart = new Chart(ticketsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Tickets Sold', 'Remaining Capacity'],
+            datasets: [{
+                label: 'Tickets',
+                data: [event.ticketsSold, event.capacity - event.ticketsSold],
+                backgroundColor: ['#0056b3', '#007bff']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Ticket Sales Overview',
+                    font: { size: 16 }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Attendance Chart
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    if (attendanceChart) attendanceChart.destroy();
+    attendanceChart = new Chart(attendanceCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Attended', 'No-Show'],
+            datasets: [{
+                label: 'Attendance',
+                data: [event.attendees, event.ticketsSold - event.attendees],
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Attendance Breakdown',
+                    font: { size: 16 }
+                }
+            }
+        }
+    });
+});
