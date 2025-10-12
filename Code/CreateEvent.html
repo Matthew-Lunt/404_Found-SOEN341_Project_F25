@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <h1 class="logo">404TicketsFound</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="SearchResults.html">Search</a>
+                <a href="CreateEvent.html" class="active">Create Event</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section container">
+        <h2 class="section-title">Create an Event</h2>
+
+        <form id="create-event-form" class="form">
+            <input type="text" id="title" placeholder="Event Title" required>
+            <input type="text" id="organizer" placeholder="Organizer Name" required>
+            <textarea id="description" rows="3" placeholder="Event Description" required></textarea>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" required>
+
+            <label for="timeStart">Start Time:</label>
+            <input type="time" id="timeStart" required>
+
+            <label for="timeEnd">End Time (optional):</label>
+            <input type="time" id="timeEnd" placeholder="Leave blank for 'Late'">
+
+            <input type="text" id="location" placeholder="Location" required>
+            <input type="number" id="capacity" placeholder="Ticket Capacity" min="1" required>
+
+            <label>Ticket Type:</label>
+            <div>
+                <input type="radio" id="free" name="ticketType" value="Free" checked>
+                <label for="free">Free</label>
+                <input type="radio" id="paid" name="ticketType" value="Paid">
+                <label for="paid">Paid</label>
+            </div>
+
+            <div id="priceField" style="display: none;">
+                <input type="number" id="price" placeholder="Ticket Price ($)" min="0">
+            </div>
+
+            <button type="submit" class="btn-primary">Preview Event</button>
+        </form>
+    </section>
+
+    <section id="preview" class="section container" style="display: none;">
+        <h2 class="section-title">Event Preview</h2>
+        <div id="preview-content" class="card"></div>
+        <button id="publish-btn" class="btn-primary">Publish Event</button>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('create-event-form');
+        const priceField = document.getElementById('priceField');
+        const preview = document.getElementById('preview');
+        const previewContent = document.getElementById('preview-content');
+        const priceInput = document.getElementById('price');
+        const publishBtn = document.getElementById('publish-btn');
+
+        // Show or hide price field
+        document.getElementById('paid').addEventListener('change', () => {
+            priceField.style.display = 'block';
+            priceInput.required = true;
+        });
+        document.getElementById('free').addEventListener('change', () => {
+            priceField.style.display = 'none';
+            priceInput.required = false;
+            priceInput.value = '';
+        });
+
+        // Handle preview
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const startTime = document.getElementById('timeStart').value;
+            const endTime = document.getElementById('timeEnd').value;
+            const timeDisplay = endTime ? `${startTime} – ${endTime}` : `${startTime} – Late`;
+
+            const eventData = {
+                title: document.getElementById('title').value,
+                organizer: document.getElementById('organizer').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('date').value,
+                time: timeDisplay,
+                location: document.getElementById('location').value,
+                ticketType: document.querySelector('input[name="ticketType"]:checked').value,
+                price: priceInput.value || 'Free'
+            };
+
+            // Preview without ticket capacity
+            previewContent.innerHTML = `
+                <h4>${eventData.title}</h4>
+                <p><strong>Organizer:</strong> ${eventData.organizer}</p>
+                <p>${eventData.description}</p>
+                <p>📅 ${eventData.date} at ${eventData.time}</p>
+                <p>📍 ${eventData.location}</p>
+                <p>💵 ${eventData.ticketType === 'Paid' ? '$' + eventData.price : 'Free'}</p>
+            `;
+
+            preview.style.display = 'block';
+            preview.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Demo publish
+        publishBtn.addEventListener('click', () => {
+            alert("This is just a demo. Event not actually published.");
+        });
+    </script>
+</body>
+
+</html>
