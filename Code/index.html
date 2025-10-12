@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>404TicketsFound</title>
   <link rel="stylesheet" href="css/homepage.css">
-  <script src="JS/homeslideshow.js"></script>
+  <script src="JS/homeslideshow.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
 
@@ -96,24 +97,38 @@
 
 <section id="events" class="container section">
   <h3 class="section-title">Upcoming Events</h3>
-  <div class="grid">
-    <div class="card">
+  <div class="grid" id="eventsGrid">
+    <div class="card" data-title="Rock Concert" data-location="Montreal, QC" data-start="2025-10-15T19:00:00-04:00" data-end="2025-10-15T22:00:00-04:00" data-price="50">
       <h4>Rock Concert</h4>
       <p>📍 Montreal, QC</p>
       <p>📅 Oct 15, 2025</p>
-      <button class="btn-primary">Buy Ticket - $50</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-primary claim-btn" data-type="FREE">Claim Free</button>
+        <button class="btn-primary claim-btn" data-type="MOCKPAID">Mock Paid</button>
+        <button class="btn-secondary add-cal-btn">Add to Calendar</button>
+      </div>
     </div>
-    <div class="card">
+
+    <div class="card" data-title="Food Festival" data-location="Toronto, ON" data-start="2025-11-02T11:00:00-04:00" data-end="2025-11-02T18:00:00-04:00" data-price="25">
       <h4>Food Festival</h4>
       <p>📍 Toronto, ON</p>
       <p>📅 Nov 2, 2025</p>
-      <button class="btn-primary">Buy Ticket - $25</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-primary claim-btn" data-type="FREE">Claim Free</button>
+        <button class="btn-primary claim-btn" data-type="MOCKPAID">Mock Paid</button>
+        <button class="btn-secondary add-cal-btn">Add to Calendar</button>
+      </div>
     </div>
-    <div class="card">
+
+    <div class="card" data-title="Hockey Game" data-location="Vancouver, BC" data-start="2025-12-12T19:30:00-08:00" data-end="2025-12-12T22:00:00-08:00" data-price="75">
       <h4>Hockey Game</h4>
       <p>📍 Vancouver, BC</p>
       <p>📅 Dec 12, 2025</p>
-      <button class="btn-primary">Buy Ticket - $75</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn-primary claim-btn" data-type="FREE">Claim Free</button>
+        <button class="btn-primary claim-btn" data-type="MOCKPAID">Mock Paid</button>
+        <button class="btn-secondary add-cal-btn">Add to Calendar</button>
+      </div>
     </div>
   </div>
 </section>
@@ -131,6 +146,81 @@
 <footer>
   <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
 </footer>
+
+<div id="ticketModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <button class="close-btn" style="float:right;">&times;</button>
+    <h3>Your Ticket</h3>
+    <div id="qrContainer" style="display:flex;justify-content:center;margin:10px 0;"></div>
+    <p id="ticketMeta" style="text-align:center;font-size:14px;"></p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn-primary" id="downloadPngBtn">Download Ticket (PNG)</button>
+      <button class="btn-secondary" id="downloadIcsBtn">Add to Calendar (.ics)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function pad(n){return String(n).padStart(2,'0');}
+  function toICSDate(dtStr){const d=new Date(dtStr);return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z';}
+  function downloadICS(ev){const uid='evt-'+Math.random().toString(36).slice(2)+'@404ticketsfound';const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//404TicketsFound//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+toICSDate(new Date().toISOString()),'DTSTART:'+toICSDate(ev.start),'DTEND:'+toICSDate(ev.end),'SUMMARY:'+ev.title.replace(/[,;]/g,' '),'LOCATION:'+ev.location.replace(/[,;]/g,' '),'DESCRIPTION:Ticketed via 404TicketsFound','END:VEVENT','END:VCALENDAR'];const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=ev.title.replace(/\s+/g,'_')+'.ics';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
+  function makeTicketId(){return'TKT-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+  function getEventFromCard(card){return{title:card.dataset.title,location:card.dataset.location,start:card.dataset.start,end:card.dataset.end,price:Number(card.dataset.price||0)};}
+
+  const claimButtons=document.querySelectorAll('.claim-btn');
+  const addCalButtons=document.querySelectorAll('.add-cal-btn');
+  const ticketModal=document.getElementById('ticketModal');
+  const qrContainer=document.getElementById('qrContainer');
+  const ticketMeta=document.getElementById('ticketMeta');
+
+  addCalButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const card=btn.closest('.card');
+      const ev=getEventFromCard(card);
+      downloadICS(ev);
+    });
+  });
+
+  claimButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const card=btn.closest('.card');
+      const ev=getEventFromCard(card);
+      const type=btn.dataset.type;
+      openTicketModal(ev,type);
+    });
+  });
+
+  document.querySelector('.close-btn').onclick=()=>ticketModal.style.display='none';
+  window.onclick=e=>{if(e.target===ticketModal)ticketModal.style.display='none';};
+
+  function openTicketModal(eventInfo,type){
+    ticketModal.style.display='block';
+    qrContainer.innerHTML='';
+
+    const rand=Math.floor(Math.random()*9000)+1000;
+    const code=`TICKET-${rand}-${type}`;
+    new QRCode(qrContainer,{text:code,width:200,height:200,correctLevel:QRCode.CorrectLevel.H});
+    ticketMeta.textContent=`${eventInfo.title} • ${eventInfo.location} • ${code}`;
+
+    document.getElementById('downloadIcsBtn').onclick=()=>downloadICS(eventInfo);
+    document.getElementById('downloadPngBtn').onclick=()=>{
+      const canvas=qrContainer.querySelector('canvas');
+      if(canvas){
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='white';
+        ctx.fillRect(canvas.width/2-30,canvas.height/2-30,60,60);
+        ctx.fillStyle='black';
+        ctx.font='bold 18px Arial';
+        ctx.textAlign='center';
+        ctx.fillText('TIX',canvas.width/2,canvas.height/2+6);
+        const a=document.createElement('a');
+        a.href=canvas.toDataURL('image/png');
+        a.download=`${code}.png`;
+        a.click();
+      }
+    };
+  }
+</script>
 
 </body>
 </html>
