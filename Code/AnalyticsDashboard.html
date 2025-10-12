@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Analytics Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- For charts -->
+    <style>
+        /* Dashboard specific styles */
+        #eventSelectContainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        #metrics .card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #metrics .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        #metrics .card h4 {
+            color: #0056b3;
+            margin-bottom: 10px;
+        }
+
+        #metrics .card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        #charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        /* Welcome card */
+        #welcomeCard {
+            background: #e3f2fd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer fix */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        section {
+            flex: 1;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <h1 class="logo">404TicketsFound</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="AnalyticsDashboard.html" class="active">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section container">
+        <div id="welcomeCard">
+            <h3>Welcome Back, Organizer!</h3>
+            <p>View your event analytics and performance below.</p>
+        </div>
+
+        <div id="eventSelectContainer">
+            <label for="eventSelect">Select Event:</label>
+            <select id="eventSelect">
+                <option value="">--Choose Event--</option>
+            </select>
+        </div>
+
+        <!-- Metric Cards -->
+        <div id="metrics">
+            <div class="card">
+                <h4>Tickets Sold</h4>
+                <p id="ticketsSold">0</p>
+            </div>
+            <div class="card">
+                <h4>Remaining Capacity</h4>
+                <p id="remainingCapacity">0</p>
+            </div>
+            <div class="card">
+                <h4>Attendees</h4>
+                <p id="attendees">0</p>
+            </div>
+            <div class="card">
+                <h4>Revenue</h4>
+                <p id="revenue">$0</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div id="charts">
+            <canvas id="ticketsChart" width="400" height="200"></canvas>
+            <canvas id="attendanceChart" width="400" height="200"></canvas>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>
