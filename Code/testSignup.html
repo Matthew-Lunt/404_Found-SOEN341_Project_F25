@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
+      background: linear-gradient(to right, #912338, #470101);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -43,7 +43,7 @@
     }
 
     button {
-      background-color: #4facfe;
+      background-color: #912338;
       color: white;
       border: none;
       border-radius: 5px;
@@ -54,13 +54,13 @@
     }
 
     button:hover {
-      background-color: #00c6ff;
+      background-color: #470101;
     }
 
     .toggle-link {
       margin-top: 1rem;
       font-size: 0.9rem;
-      color: #007bff;
+      color: #912338;
       cursor: pointer;
       text-decoration: underline;
     }
@@ -83,11 +83,17 @@
       <button type="submit">Login</button>
     </form>
 
-    <!-- SIGNUP FORM -->
     <form id="signup-form" style="display: none;">
       <input type="text" id="signup-name" placeholder="Full Name" required />
       <input type="email" id="signup-email" placeholder="Email" required />
       <input type="password" id="signup-password" placeholder="Password" required />
+
+      <select id="signup-role" required>
+        <option value="">Select Account Type</option>
+        <option value="organization">Organization</option>
+        <option value="user">User</option>
+      </select>
+
       <button type="submit">Sign Up</button>
     </form>
 
