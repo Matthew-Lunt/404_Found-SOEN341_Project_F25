@@ -73,8 +73,13 @@
         const previewContent = document.getElementById('preview-content');
         const priceInput = document.getElementById('price');
         const publishBtn = document.getElementById('publish-btn');
+        const dateInput = document.getElementById('date');
 
-        // Show or hide price field
+        // 🗓️ Prevent selecting past dates
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+
+        // 💵 Show or hide price field
         document.getElementById('paid').addEventListener('change', () => {
             priceField.style.display = 'block';
             priceInput.required = true;
@@ -85,7 +90,7 @@
             priceInput.value = '';
         });
 
-        // Handle preview
+        // 🧾 Handle preview
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -100,17 +105,18 @@
                 date: document.getElementById('date').value,
                 time: timeDisplay,
                 location: document.getElementById('location').value,
+                capacity: document.getElementById('capacity').value,
                 ticketType: document.querySelector('input[name="ticketType"]:checked').value,
                 price: priceInput.value || 'Free'
             };
 
-            // Preview without ticket capacity
             previewContent.innerHTML = `
                 <h4>${eventData.title}</h4>
                 <p><strong>Organizer:</strong> ${eventData.organizer}</p>
                 <p>${eventData.description}</p>
                 <p>📅 ${eventData.date} at ${eventData.time}</p>
                 <p>📍 ${eventData.location}</p>
+                <p>🎟️ Capacity: ${eventData.capacity}</p>
                 <p>💵 ${eventData.ticketType === 'Paid' ? '$' + eventData.price : 'Free'}</p>
             `;
 
@@ -118,7 +124,7 @@
             preview.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // Demo publish
+        // 🪧 Demo publish
         publishBtn.addEventListener('click', () => {
             alert("This is just a demo. Event not actually published.");
         });
