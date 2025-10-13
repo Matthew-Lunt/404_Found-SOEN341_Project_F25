@@ -1,10 +1,10 @@
 Detailed log of each team member's contribution (document)
 
 • Matthew Lunt: I logged a meeting minutes. I created, connected and organized the database, and I linked login page to database to enter new records.
-• Kruti Patel:
+• Kruti Patel:I created sub issues of core feature as well task breake down, reviewed pull request and also discussed future implementation. 
 • Sophie Hariri: I broke down some user stories into tasks, assigned story points, risks and priorities. I updated the ticket logic for “Claim Free” and “Mock Paid”, and added QR code generation and calendar export for events. I helped in modifying the browsing page.
-• Pawan Kumar Gupta:
+• Pawan Kumar Gupta:I added the initial search button with all filters, created sub issues, reviewed pull requests, made initial changes to the home page css and discussed future implementations.
 • Zeynep Ozcan:I contributed to the project by assisting with the visual design, fixing bugs,and developing the user and organizer profile pages to display personalized information for each account type as well as calendars where users can see their events and plan accordingly.
 • Shadman Chowdhury: I implemented the sign up and login page and then linked it to the main landing page. I helped set goals for sprint 2 and discussed feature implementations. I also set up validation features.
 • Gracie Idonije:
-• Joshua Vilda: I helped fix the frontend in order to make it more user friendly. I also helped implement core functions and helped fix bugs.
+• Joshua Vilda: fully refactored the mainpage to make it more user friendly as well as setting up front end with js components and helping teammates fix bugs and issues.
