@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Analytics - 404TicketsFound</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/administratorAnalytics.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <h1 class="logo">404TicketsFound</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="AnalyticsDashboard.html">Dashboard</a>
+                <a href="#" class="active">Admin Analytics</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h2>Global Analytics Dashboard</h2>
+            <p>Monitor platform performance, participation trends, and key metrics</p>
+        </div>
+
+        <div class="controls">
+            <select id="timeRange">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="365">Last Year</option>
+            </select>
+            <input type="date" id="startDate">
+            <input type="date" id="endDate">
+            <button onclick="refreshData()">🔄 Refresh Data</button>
+            <button onclick="generateReport()">📊 Generate Report</button>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Total Events</h4>
+                    <div class="stat-icon icon-events">📅</div>
+                </div>
+                <div class="stat-value" id="totalEvents">247</div>
+                <div class="stat-change positive">
+                    ↑ 12% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Tickets Issued</h4>
+                    <div class="stat-icon icon-tickets">🎫</div>
+                </div>
+                <div class="stat-value" id="totalTickets">45,892</div>
+                <div class="stat-change positive">
+                    ↑ 18% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Total Revenue</h4>
+                    <div class="stat-icon icon-revenue">💰</div>
+                </div>
+                <div class="stat-value" id="totalRevenue">$892K</div>
+                <div class="stat-change positive">
+                    ↑ 23% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Active Users</h4>
+                    <div class="stat-icon icon-users">👥</div>
+                </div>
+                <div class="stat-value" id="activeUsers">12,456</div>
+                <div class="stat-change positive">
+                    ↑ 8% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Avg. Attendance Rate</h4>
+                    <div class="stat-icon icon-events">📈</div>
+                </div>
+                <div class="stat-value">87%</div>
+                <div class="stat-change positive">
+                    ↑ 3% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Platform Fee Revenue</h4>
+                    <div class="stat-icon icon-revenue">💵</div>
+                </div>
+                <div class="stat-value">$44.6K</div>
+                <div class="stat-change positive">
+                    ↑ 23% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Active Organizers</h4>
+                    <div class="stat-icon icon-users">🏢</div>
+                </div>
+                <div class="stat-value">89</div>
+                <div class="stat-change positive">
+                    ↑ 5% from last period
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h4>Avg. Ticket Price</h4>
+                    <div class="stat-icon icon-tickets">💳</div>
+                </div>
+                <div class="stat-value">$19.45</div>
+                <div class="stat-change negative">
+                    ↓ 2% from last period
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>Ticket Sales Trend</h3>
+                <canvas id="ticketSalesChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>Revenue Growth</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>Events by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>User Engagement</h3>
+                <canvas id="engagementChart"></canvas>
+            </div>
+
+            <div class="chart-card full-width">
+                <h3>Event Participation Trends</h3>
+                <canvas id="participationChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>Top Event Categories by Revenue</h3>
+                <canvas id="categoryRevenueChart"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <h3>Platform Usage by Hour</h3>
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Performers Table -->
+        <div class="table-card">
+            <h3>Top Performing Events</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Organizer</th>
+                        <th>Tickets Sold</th>
+                        <th>Revenue</th>
+                        <th>Attendance Rate</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody id="topEventsBody">
+                    <tr>
+                        <td>Summer Music Festival 2025</td>
+                        <td>Music Live Productions</td>
+                        <td>4,850</td>
+                        <td>$97,000</td>
+                        <td>97%</td>
+                        <td><span class="trend-indicator trend-up">↑ Trending</span></td>
+                    </tr>
+                    <tr>
+                        <td>Tech Summit Montreal</td>
+                        <td>Tech Events Inc</td>
+                        <td>1,980</td>
+                        <td>$79,200</td>
+                        <td>99%</td>
+                        <td><span class="trend-indicator trend-up">↑ Trending</span></td>
+                    </tr>
+                    <tr>
+                        <td>Jazz Night Downtown</td>
+                        <td>Festival Pro</td>
+                        <td>485</td>
+                        <td>$14,550</td>
+                        <td>97%</td>
+                        <td><span class="trend-indicator trend-stable">→ Stable</span></td>
+                    </tr>
+                    <tr>
+                        <td>Food & Wine Expo</td>
+                        <td>Elite Events Inc</td>
+                        <td>2,450</td>
+                        <td>$61,250</td>
+                        <td>82%</td>
+                        <td><span class="trend-indicator trend-down">↓ Declining</span></td>
+                    </tr>
+                    <tr>
+                        <td>Comedy Night Special</td>
+                        <td>Entertainment Hub</td>
+                        <td>890</td>
+                        <td>$26,700</td>
+                        <td>95%</td>
+                        <td><span class="trend-indicator trend-up">↑ Trending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Feature Usage Table -->
+        <div class="table-card">
+            <h3>Feature Usage Analytics</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Total Uses</th>
+                        <th>Unique Users</th>
+                        <th>Avg. Daily Use</th>
+                        <th>Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Event Creation</td>
+                        <td>247</td>
+                        <td>89</td>
+                        <td>8.2</td>
+                        <td><span class="trend-indicator trend-up">+12%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Ticket Purchase</td>
+                        <td>45,892</td>
+                        <td>12,456</td>
+                        <td>1,529</td>
+                        <td><span class="trend-indicator trend-up">+18%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Event Search</td>
+                        <td>89,234</td>
+                        <td>15,678</td>
+                        <td>2,974</td>
+                        <td><span class="trend-indicator trend-up">+25%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Dashboard Views</td>
+                        <td>5,623</td>
+                        <td>892</td>
+                        <td>187</td>
+                        <td><span class="trend-indicator trend-up">+8%</span></td>
+                    </tr>
+                    <tr>
+                        <td>Email Notifications</td>
+                        <td>123,456</td>
+                        <td>18,234</td>
+                        <td>4,115</td>
+                        <td><span class="trend-indicator trend-stable">+2%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="chart-card">
+            <h3>Recent Platform Activity</h3>
+            <div class="activity-feed" id="activityFeed">
+                <div class="activity-item">
+                    <div class="activity-time">2 minutes ago</div>
+                    <div class="activity-description">New event created: "Winter Gala 2025" by Elite Events Inc</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-time">15 minutes ago</div>
+                    <div class="activity-description">1,247 tickets sold for "Rock Concert Series"</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-time">1 hour ago</div>
+                    <div class="activity-description">New organizer approved: Festival Masters LLC</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-time">3 hours ago</div>
+                    <div class="activity-description">Revenue milestone reached: $900K total platform revenue</div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-time">5 hours ago</div>
+                    <div class="activity-description">Peak usage detected: 5,234 concurrent users</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Reports -->
+        <div class="table-card">
+            <h3>Export Reports</h3>
+            <p>Generate comprehensive reports for decision-making and analysis</p>
+            <div class="export-section">
+                <button class="btn-export btn-pdf" onclick="exportPDF()">📄 Export as PDF</button>
+                <button class="btn-export btn-csv" onclick="exportCSV()">📊 Export as CSV</button>
+                <button class="btn-export btn-excel" onclick="exportExcel()">📗 Export as Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Initialize charts
+        const ticketSalesChart = new Chart(document.getElementById('ticketSalesChart'), {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Tickets Sold',
+                    data: [8950, 11200, 12450, 13292],
+                    borderColor: '#912338',
+                    backgroundColor: 'rgba(145, 35, 56, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const revenueChart = new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Revenue ($K)',
+                    data: [179, 224, 249, 240],
+                    backgroundColor: '#912338'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Concerts', 'Sports', 'Festivals', 'Theater', 'Other'],
+                datasets: [{
+                    data: [35, 25, 20, 12, 8],
+                    backgroundColor: ['#912338', '#1976d2', '#388e3c', '#f57c00', '#7b1fa2']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true
+            }
+        });
+
+        const engagementChart = new Chart(document.getElementById('engagementChart'), {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Daily Active Users',
+                    data: [8200, 9100, 8900, 9500, 10200, 12800, 11400],
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const participationChart = new Chart(document.getElementById('participationChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [{
+                    label: 'Events Created',
+                    data: [18, 22, 25, 28, 30, 35, 38, 42, 45, 48],
+                    borderColor: '#912338',
+                    backgroundColor: 'rgba(145, 35, 56, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Tickets Sold',
+                    data: [3200, 3800, 4100, 4500, 4800, 5200, 5500, 5900, 6200, 6500],
+                    borderColor: '#388e3c',
+                    backgroundColor: 'rgba(56, 142, 60, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const categoryRevenueChart = new Chart(document.getElementById('categoryRevenueChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Concerts', 'Sports', 'Festivals', 'Theater', 'Other'],
+                datasets: [{
+                    label: 'Revenue ($K)',
+                    data: [312, 223, 178, 107, 72],
+                    backgroundColor: ['#912338', '#1976d2', '#388e3c', '#f57c00', '#7b1fa2']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const usageChart = new Chart(document.getElementById('usageChart'), {
+            type: 'line',
+            data: {
+                labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+                datasets: [{
+                    label: 'Active Users',
+                    data: [245, 156, 378, 1890, 2450, 3120, 4560, 3890],
+                    borderColor: '#7b1fa2',
+                    backgroundColor: 'rgba(123, 31, 162, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Functions
+        function refreshData() {
+            alert('Data refreshed successfully! Latest metrics loaded.');
+            location.reload();
+        }
+
+        function generateReport() {
+            const timeRange = document.getElementById('timeRange').value;
+            alert(`Generating comprehensive report for the last ${timeRange} days...\nReport will be available in the Export section.`);
+        }
+
+        function exportPDF() {
+            alert('Exporting analytics as PDF...\nYour download will begin shortly.');
+        }
+
+        function exportCSV() {
+            alert('Exporting analytics as CSV...\nYour download will begin shortly.');
+        }
+
+        function exportExcel() {
+            alert('Exporting analytics as Excel...\nYour download will begin shortly.');
+        }
+
+        // Set default dates
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        document.getElementById('endDate').valueAsDate = today;
+        document.getElementById('startDate').valueAsDate = thirtyDaysAgo;
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const activityFeed = document.getElementById('activityFeed');
+            const activities = [
+                'New ticket purchased for "Summer Festival"',
+                'Event "Tech Conference" reached 500 attendees',
+                'Organizer "Music Pro" created new event',
+                'Peak traffic detected: 3,456 users online',
+                'New user registered: user@example.com'
+            ];
+            
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            const newActivity = document.createElement('div');
+            newActivity.className = 'activity-item';
+            newActivity.innerHTML = `
+                <div class="activity-time">Just now</div>
+                <div class="activity-description">${randomActivity}</div>
+            `;
+            
+            activityFeed.insertBefore(newActivity, activityFeed.firstChild);
+            
+            if (activityFeed.children.length > 10) {
+                activityFeed.removeChild(activityFeed.lastChild);
+            }
+        }, 30000);
+    </script>
+</body>
+
+</html>
