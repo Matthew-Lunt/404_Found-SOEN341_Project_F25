@@ -67,6 +67,22 @@
     </footer>
 
     <script>
+        // show create and publish only for organizer
+                (function(){
+        try {
+            const a = JSON.parse(localStorage.getItem('auth') || 'null');
+            if (!a || a.role !== 'organizer') {
+            location.href = '404NotFoundLogin.html';
+            }
+        } catch (e) {
+            location.href = '404NotFoundLogin.html';
+        }
+        })();
+        const __auth_isOrganizer = (()=>{ 
+        try { const a = JSON.parse(localStorage.getItem('auth')||'null'); return a && a.role === 'organizer'; } 
+        catch(e){ return false; } 
+        })();
+        try { if(!__auth_isOrganizer){ publishBtn.style.display = 'none'; } } catch(e){}
         const form = document.getElementById('create-event-form');
         const priceField = document.getElementById('priceField');
         const preview = document.getElementById('preview');
@@ -74,6 +90,13 @@
         const priceInput = document.getElementById('price');
         const publishBtn = document.getElementById('publish-btn');
         const dateInput = document.getElementById('date');
+        let __lastEventForPublish = null;
+        function __toISO(dateStr, timeStr){
+        const [y,m,d]=dateStr.split('-').map(Number);
+        const [hh,mm]=(timeStr||"00:00").split(':').map(Number);
+        const dt=new Date(y,(m||1)-1,d||1,hh||0,mm||0,0);
+        return dt.toISOString();
+}
 
         // 🗓️ Prevent selecting past dates
         const today = new Date().toISOString().split('T')[0];
@@ -109,7 +132,30 @@
                 ticketType: document.querySelector('input[name="ticketType"]:checked').value,
                 price: priceInput.value || 'Free'
             };
-
+            // keeping copy of the event for publishing
+            (function(){
+            try{
+                const dateVal = document.getElementById('date').value;
+                const startVal = document.getElementById('timeStart').value;
+                const endVal = document.getElementById('timeEnd').value;
+                const startISO = __toISO(dateVal, startVal);
+                let endISO = endVal ? __toISO(dateVal, endVal) : (function(){
+                const t = new Date(startISO); t.setHours(t.getHours()+2); return t.toISOString();
+                })();
+                __lastEventForPublish = {
+                name: eventData.title,
+                organization: eventData.organizer,
+                location: eventData.location,
+                price: (eventData.ticketType==='Paid') ? Number(eventData.price||0) : 0,
+                type: "Custom",
+                date: dateVal,
+                start: startISO,
+                end: endISO,
+                capacity: Number(eventData.capacity||0),
+                description: eventData.description
+                };
+            }catch(e){ /* ignore errors */ }
+            })();
             previewContent.innerHTML = `
                 <h4>${eventData.title}</h4>
                 <p><strong>Organizer:</strong> ${eventData.organizer}</p>
@@ -126,7 +172,19 @@
 
         // 🪧 Demo publish
         publishBtn.addEventListener('click', () => {
-            alert("This is just a demo. Event not actually published.");
+        if(!__lastEventForPublish){
+            alert("Please preview the event first.");
+            return;
+        }
+        try{
+            const key='publishedEvents';
+            const list=JSON.parse(localStorage.getItem(key)||'[]');
+            list.push(__lastEventForPublish);
+            localStorage.setItem(key, JSON.stringify(list));
+            alert("Event published! You can find it in Search Results.");
+        }catch(e){
+            alert("Could not publish the event. " + e.message);
+        }
         });
     </script>
 </body>
