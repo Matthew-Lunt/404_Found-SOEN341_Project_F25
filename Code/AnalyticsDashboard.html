@@ -4,174 +4,832 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Analytics Dashboard</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Admin Management - 404TicketsFound</title>
     <style>
-        /* Dashboard specific styles */
-        #eventSelectContainer {
-            text-align: center;
-            margin-bottom: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        #metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        #metrics .card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #metrics .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        #metrics .card h4 {
-            color: #912338;
-            margin-bottom: 10px;
-        }
-
-        #metrics .card p {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        #charts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-            display: none;
-        }
-
-        /* Welcome card */
-        #welcomeCard {
-            background: #e3f2fd;
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Footer fix */
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        section {
+        header {
+            background: #912338;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
             flex: 1;
         }
 
-        footer {
-            margin-top: auto;
+        .admin-header {
+            background: linear-gradient(135deg, #912338 0%, #6a1a2a 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Filters */
-        #filters {
+        .admin-header h2 {
+            margin-bottom: 10px;
+        }
+
+        .tabs {
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .tab:hover {
+            background: #f0f0f0;
+        }
+
+        .tab.active {
+            background: #912338;
+            color: white;
+            transform: translateY(2px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
 
-        #filters input,
-        #filters select {
-            padding: 5px 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        .card h3 {
+            color: #912338;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
         }
 
-        label {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #912338;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-active {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
             margin-right: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-view {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #0056b3;
+        }
+
+        .btn-delete {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #545b62;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter input,
+        .search-filter select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+
+        .search-filter input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #912338;
+        }
+
+        .settings-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-save {
+            background: #912338;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn-save:hover {
+            background: #6a1a2a;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            color: #912338;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state img {
+            width: 100px;
+            opacity: 0.5;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
     <header>
-        <div class="container header-content">
+        <div class="header-content">
             <h1 class="logo">404TicketsFound</h1>
             <nav>
                 <a href="index.html">Home</a>
-                <a href="AnalyticsDashboard.html" class="active">Dashboard</a>
+                <a href="AnalyticsDashboard.html">Dashboard</a>
+                <a href="#" class="active">Admin Management</a>
             </nav>
         </div>
     </header>
 
-    <section class="section container">
-        <div id="welcomeCard">
-            <h3>Welcome Back, Organizer!</h3>
-            <p>View your event analytics and performance below.</p>
+    <div class="container">
+        <div class="admin-header">
+            <h2>Administrator Management</h2>
+            <p>Manage organizers, events, and platform settings</p>
         </div>
 
-        <!-- Filters -->
-        <div id="filters">
-            <div>
-                <label for="filterDate">Filter by Date:</label>
-                <input type="date" id="filterDate">
+        <div class="tabs">
+            <button class="tab active" data-tab="organizers">Organizer Accounts</button>
+            <button class="tab" data-tab="events">Event Moderation</button>
+            <button class="tab" data-tab="reports">Reports & Issues</button>
+            <button class="tab" data-tab="settings">Platform Settings</button>
+        </div>
+
+        <!-- Organizers Tab -->
+        <div id="organizers" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Pending Approvals</h4>
+                    <p id="pendingCount">3</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Active Organizers</h4>
+                    <p id="activeOrgCount">12</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Organizers</h4>
+                    <p id="totalOrgCount">15</p>
+                </div>
             </div>
-            <div>
-                <label for="filterType">Filter by Event Type:</label>
-                <select id="filterType">
-                    <option value="">All</option>
-                    <option value="Concert">Concert</option>
-                    <option value="Festival">Festival</option>
-                    <option value="Sports">Sports</option>
-                </select>
+
+            <div class="card">
+                <h3>Organizer Account Management</h3>
+                <div class="search-filter">
+                    <input type="text" id="orgSearch" placeholder="Search by name or email...">
+                    <select id="orgStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <table id="organizersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Company</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="organizersBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div id="eventSelectContainer">
-            <label for="eventSelect">Select Event:</label>
-            <select id="eventSelect">
-                <option value="">--Choose Event--</option>
-            </select>
+        <!-- Events Tab -->
+        <div id="events" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Pending Review</h4>
+                    <p id="pendingEvents">5</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Active Events</h4>
+                    <p id="activeEvents">28</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Flagged Events</h4>
+                    <p id="flaggedEvents">2</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Event Moderation</h3>
+                <div class="search-filter">
+                    <input type="text" id="eventSearch" placeholder="Search events...">
+                    <select id="eventStatusFilter">
+                        <option value="">All Events</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="active">Active</option>
+                        <option value="flagged">Flagged</option>
+                    </select>
+                </div>
+                <table id="eventsTable">
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Organizer</th>
+                            <th>Date</th>
+                            <th>Capacity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Metric Cards -->
-        <div id="metrics">
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
             <div class="card">
-                <h4>Tickets Sold</h4>
-                <p id="ticketsSold">0</p>
-            </div>
-            <div class="card">
-                <h4>Remaining Capacity</h4>
-                <p id="remainingCapacity">0</p>
-            </div>
-            <div class="card">
-                <h4>Attendees</h4>
-                <p id="attendees">0</p>
-            </div>
-            <div class="card">
-                <h4>Revenue</h4>
-                <p id="revenue">$0</p>
+                <h3>Reports & Issues</h3>
+                <div class="search-filter">
+                    <input type="text" id="reportSearch" placeholder="Search reports...">
+                    <select id="reportTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="event">Event Issue</option>
+                        <option value="organizer">Organizer Issue</option>
+                        <option value="technical">Technical Issue</option>
+                    </select>
+                </div>
+                <table id="reportsTable">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Type</th>
+                            <th>Subject</th>
+                            <th>Reported By</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Charts -->
-        <div id="charts">
-            <canvas id="ticketsChart" width="400" height="200"></canvas>
-            <canvas id="attendanceChart" width="400" height="200"></canvas>
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <h3>Platform Settings</h3>
+                <form class="settings-form" id="settingsForm">
+                    <div class="form-group">
+                        <label>Platform Name</label>
+                        <input type="text" value="404TicketsFound" id="platformName">
+                    </div>
+                    <div class="form-group">
+                        <label>Default Ticket Processing Fee (%)</label>
+                        <input type="number" value="5" min="0" max="20" step="0.5" id="processingFee">
+                    </div>
+                    <div class="form-group">
+                        <label>Maximum Event Capacity</label>
+                        <input type="number" value="50000" id="maxCapacity">
+                    </div>
+                    <div class="form-group">
+                        <label>Organizer Approval Required</label>
+                        <select id="approvalRequired">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Support Email</label>
+                        <input type="email" value="support@404ticketsfound.com" id="supportEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>Maintenance Mode</label>
+                        <select id="maintenanceMode">
+                            <option value="false">Off</option>
+                            <option value="true">On</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Terms & Conditions</label>
+                        <textarea id="terms">By using this platform, you agree to our terms and conditions...</textarea>
+                    </div>
+                    <button type="submit" class="btn-save">Save Settings</button>
+                </form>
+            </div>
         </div>
-    </section>
+    </div>
+
+    <!-- Modal for viewing details -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Details</h3>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-view" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
     </footer>
 
+    <script>
+        // Sample data
+        const organizers = [
+            { id: 1, name: 'Sarah Johnson', email: 'sarah@events.com', company: 'Elite Events Inc', date: '2025-10-15', status: 'pending' },
+            { id: 2, name: 'Michael Chen', email: 'mchen@concerts.com', company: 'Concert Masters', date: '2025-10-20', status: 'pending' },
+            { id: 3, name: 'Emma Williams', email: 'emma@festpro.com', company: 'Festival Pro', date: '2025-10-22', status: 'pending' },
+            { id: 4, name: 'David Brown', email: 'dbrown@sportevents.com', company: 'Sports Events LLC', date: '2025-09-10', status: 'approved' },
+            { id: 5, name: 'Lisa Anderson', email: 'lisa@musiclive.com', company: 'Music Live Productions', date: '2025-09-15', status: 'approved' },
+        ];
+
+        const events = [
+            { id: 1, name: 'Summer Music Festival 2025', organizer: 'Lisa Anderson', date: '2025-07-15', capacity: 5000, status: 'active' },
+            { id: 2, name: 'Tech Conference Montreal', organizer: 'David Brown', date: '2025-11-20', capacity: 2000, status: 'pending' },
+            { id: 3, name: 'Jazz Night Downtown', organizer: 'Emma Williams', date: '2025-11-05', capacity: 500, status: 'flagged' },
+            { id: 4, name: 'Holiday Market 2025', organizer: 'Sarah Johnson', date: '2025-12-10', capacity: 3000, status: 'pending' },
+            { id: 5, name: 'Indie Rock Concert', organizer: 'Michael Chen', date: '2025-11-08', capacity: 1200, status: 'active' },
+        ];
+
+        const reports = [
+            { id: 'R001', type: 'event', subject: 'Incorrect venue address', reportedBy: 'User123', date: '2025-10-28', status: 'pending' },
+            { id: 'R002', type: 'organizer', subject: 'Suspicious activity', reportedBy: 'User456', date: '2025-10-27', status: 'pending' },
+            { id: 'R003', type: 'technical', subject: 'Payment processing error', reportedBy: 'User789', date: '2025-10-26', status: 'resolved' },
+        ];
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Render organizers
+        function renderOrganizers(filter = '') {
+            const tbody = document.getElementById('organizersBody');
+            let filtered = organizers;
+            
+            if (filter) {
+                filtered = organizers.filter(org => org.status === filter);
+            }
+            
+            tbody.innerHTML = filtered.map(org => `
+                <tr>
+                    <td>${org.name}</td>
+                    <td>${org.email}</td>
+                    <td>${org.company}</td>
+                    <td>${org.date}</td>
+                    <td><span class="status-badge status-${org.status}">${org.status.toUpperCase()}</span></td>
+                    <td>
+                        ${org.status === 'pending' ? `
+                            <button class="btn btn-approve" onclick="updateOrganizerStatus(${org.id}, 'approved')">Approve</button>
+                            <button class="btn btn-reject" onclick="updateOrganizerStatus(${org.id}, 'rejected')">Reject</button>
+                        ` : ''}
+                        <button class="btn btn-view" onclick="viewOrganizerDetails(${org.id})">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render events
+        function renderEvents(filter = '') {
+            const tbody = document.getElementById('eventsBody');
+            let filtered = events;
+            
+            if (filter) {
+                filtered = events.filter(evt => evt.status === filter);
+            }
+            
+            tbody.innerHTML = filtered.map(evt => `
+                <tr>
+                    <td>${evt.name}</td>
+                    <td>${evt.organizer}</td>
+                    <td>${evt.date}</td>
+                    <td>${evt.capacity}</td>
+                    <td><span class="status-badge status-${evt.status}">${evt.status.toUpperCase()}</span></td>
+                    <td>
+                        <button class="btn btn-view" onclick="viewEventDetails(${evt.id})">View</button>
+                        ${evt.status === 'flagged' ? `<button class="btn btn-reject" onclick="removeEvent(${evt.id})">Remove</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render reports
+        function renderReports(filter = '') {
+            const tbody = document.getElementById('reportsBody');
+            let filtered = reports;
+            
+            if (filter) {
+                filtered = reports.filter(rep => rep.type === filter);
+            }
+            
+            tbody.innerHTML = filtered.map(rep => `
+                <tr>
+                    <td>${rep.id}</td>
+                    <td>${rep.type}</td>
+                    <td>${rep.subject}</td>
+                    <td>${rep.reportedBy}</td>
+                    <td>${rep.date}</td>
+                    <td><span class="status-badge status-${rep.status === 'resolved' ? 'approved' : 'pending'}">${rep.status.toUpperCase()}</span></td>
+                    <td>
+                        <button class="btn btn-view" onclick="viewReportDetails('${rep.id}')">View</button>
+                        ${rep.status === 'pending' ? `<button class="btn btn-approve" onclick="resolveReport('${rep.id}')">Resolve</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Functions
+        function updateOrganizerStatus(id, status) {
+            const org = organizers.find(o => o.id === id);
+            if (org) {
+                org.status = status;
+                renderOrganizers();
+                updateStats();
+                alert(`Organizer ${status === 'approved' ? 'approved' : 'rejected'} successfully!`);
+            }
+        }
+
+        function viewOrganizerDetails(id) {
+            const org = organizers.find(o => o.id === id);
+            if (org) {
+                document.getElementById('modalTitle').textContent = 'Organizer Details';
+                document.getElementById('modalBody').innerHTML = `
+                    <p><strong>Name:</strong> ${org.name}</p>
+                    <p><strong>Email:</strong> ${org.email}</p>
+                    <p><strong>Company:</strong> ${org.company}</p>
+                    <p><strong>Application Date:</strong> ${org.date}</p>
+                    <p><strong>Status:</strong> ${org.status}</p>
+                `;
+                document.getElementById('detailModal').classList.add('active');
+            }
+        }
+
+        function viewEventDetails(id) {
+            const evt = events.find(e => e.id === id);
+            if (evt) {
+                document.getElementById('modalTitle').textContent = 'Event Details';
+                document.getElementById('modalBody').innerHTML = `
+                    <p><strong>Name:</strong> ${evt.name}</p>
+                    <p><strong>Organizer:</strong> ${evt.organizer}</p>
+                    <p><strong>Date:</strong> ${evt.date}</p>
+                    <p><strong>Capacity:</strong> ${evt.capacity}</p>
+                    <p><strong>Status:</strong> ${evt.status}</p>
+                `;
+                document.getElementById('detailModal').classList.add('active');
+            }
+        }
+
+        function viewReportDetails(id) {
+            const rep = reports.find(r => r.id === id);
+            if (rep) {
+                document.getElementById('modalTitle').textContent = 'Report Details';
+                document.getElementById('modalBody').innerHTML = `
+                    <p><strong>Report ID:</strong> ${rep.id}</p>
+                    <p><strong>Type:</strong> ${rep.type}</p>
+                    <p><strong>Subject:</strong> ${rep.subject}</p>
+                    <p><strong>Reported By:</strong> ${rep.reportedBy}</p>
+                    <p><strong>Date:</strong> ${rep.date}</p>
+                    <p><strong>Status:</strong> ${rep.status}</p>
+                `;
+                document.getElementById('detailModal').classList.add('active');
+            }
+        }
+
+        function removeEvent(id) {
+            if (confirm('Are you sure you want to remove this event?')) {
+                const index = events.findIndex(e => e.id === id);
+                if (index > -1) {
+                    events.splice(index, 1);
+                    renderEvents();
+                    updateStats();
+                    alert('Event removed successfully!');
+                }
+            }
+        }
+
+        function resolveReport(id) {
+            const rep = reports.find(r => r.id === id);
+            if (rep) {
+                rep.status = 'resolved';
+                renderReports();
+                alert('Report marked as resolved!');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function updateStats() {
+            document.getElementById('pendingCount').textContent = organizers.filter(o => o.status === 'pending').length;
+            document.getElementById('activeOrgCount').textContent = organizers.filter(o => o.status === 'approved').length;
+            document.getElementById('totalOrgCount').textContent = organizers.length;
+            document.getElementById('pendingEvents').textContent = events.filter(e => e.status === 'pending').length;
+            document.getElementById('activeEvents').textContent = events.filter(e => e.status === 'active').length;
+            document.getElementById('flaggedEvents').textContent = events.filter(e => e.status === 'flagged').length;
+        }
+
+        // Search and filter
+        document.getElementById('orgStatusFilter').addEventListener('change', (e) => {
+            renderOrganizers(e.target.value);
+        });
+
+        document.getElementById('eventStatusFilter').addEventListener('change', (e) => {
+            renderEvents(e.target.value);
+        });
+
+        document.getElementById('reportTypeFilter').addEventListener('change', (e) => {
+            renderReports(e.target.value);
+        });
+
+        // Settings form
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Settings saved successfully!');
+        });
+
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        renderOrganizers();
+        renderEvents();
+        renderReports();
+        updateStats();
+    </script>
+</body>
     <script src="js/dashboard.js"></script>
 </body>
 
