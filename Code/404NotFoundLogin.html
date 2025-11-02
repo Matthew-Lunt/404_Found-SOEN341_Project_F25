@@ -115,6 +115,10 @@
     <form id="login-form">
       <input type="email" placeholder="Email" required>
       <input type="password" placeholder="Password" required>
+      <select id="login-role" style="margin-top:8px;">
+        <option value="user">User Account</option>
+        <option value="organizer">Organizer Account</option>
+      </select>
       <button type="submit">Login</button>
     </form>
 
@@ -161,7 +165,10 @@
     // Demo login handling
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      alert("Logged in (demo only)");
+      const role = (document.getElementById('login-role')||{value:'user'}).value;
+      const email = loginForm.querySelector('input[type="email"]').value.trim();
+      try { localStorage.setItem('auth', JSON.stringify({ role, email })); } catch(e) {}
+      location.href = (role === 'organizer') ? 'organizer.html' : 'user.html';
     });
 
     // Signup handling + account type

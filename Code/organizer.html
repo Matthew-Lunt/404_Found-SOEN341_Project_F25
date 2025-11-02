@@ -139,7 +139,14 @@
 </footer>
 
 <script>
-    // ==== CALENDAR SCRIPT ====
+        // Require organizer login
+    (function(){
+    try{
+        const a = JSON.parse(localStorage.getItem('auth')||'null');
+        if(!a || a.role !== 'organizer'){ location.href = '404NotFoundLogin.html'; }
+    }catch(e){ location.href = '404NotFoundLogin.html'; }
+    })();
+    // CALENDAR SCRIPT 
     const calendar = document.getElementById('calendar');
     const monthYear = document.getElementById('monthYear');
     const prevMonthBtn = document.getElementById('prevMonth');
