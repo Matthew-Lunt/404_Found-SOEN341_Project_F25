@@ -2,191 +2,169 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Event</title>
-    <link rel="stylesheet" href="css/homepage.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Event</title>
+  <link rel="stylesheet" href="css/homepage.css">
 </head>
 
 <body>
-    <header>
-        <div class="container header-content">
-            <h1 class="logo">404TicketsFound</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="SearchResults.html">Search</a>
-                <a href="CreateEvent.html" class="active">Create Event</a>
-            </nav>
-        </div>
-    </header>
+  <header>
+    <div class="container header-content">
+      <h1 class="logo">404TicketsFound</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="SearchResults.html">Search</a>
+        <a href="CreateEvent.html" class="active">Create Event</a>
+      </nav>
+    </div>
+  </header>
 
-    <section class="section container">
-        <h2 class="section-title">Create an Event</h2>
+  <section class="section container">
+    <h2 class="section-title">Create an Event</h2>
 
-        <form id="create-event-form" class="form">
-            <input type="text" id="title" placeholder="Event Title" required>
-            <input type="text" id="organizer" placeholder="Organizer Name" required>
-            <textarea id="description" rows="3" placeholder="Event Description" required></textarea>
+    <form id="create-event-form" class="form">
+      <input type="text" id="title" placeholder="Event Title" required>
+      <input type="text" id="organizer" placeholder="Organizer Name" required>
+      <textarea id="description" rows="3" placeholder="Event Description" required></textarea>
 
-            <label for="date">Date:</label>
-            <input type="date" id="date" required>
+      <label for="date">Date:</label>
+      <input type="date" id="date" required>
 
-            <label for="timeStart">Start Time:</label>
-            <input type="time" id="timeStart" required>
+      <label for="timeStart">Start Time:</label>
+      <input type="time" id="timeStart" required>
 
-            <label for="timeEnd">End Time (optional):</label>
-            <input type="time" id="timeEnd" placeholder="Leave blank for 'Late'">
+      <label for="timeEnd">End Time (optional):</label>
+      <input type="time" id="timeEnd" placeholder="Leave blank for 'Late'">
 
-            <input type="text" id="location" placeholder="Location" required>
-            <input type="number" id="capacity" placeholder="Ticket Capacity" min="1" required>
+      <input type="text" id="location" placeholder="Location" required>
+      <input type="number" id="capacity" placeholder="Ticket Capacity" min="1" required>
 
-            <label>Ticket Type:</label>
-            <div>
-                <input type="radio" id="free" name="ticketType" value="Free" checked>
-                <label for="free">Free</label>
-                <input type="radio" id="paid" name="ticketType" value="Paid">
-                <label for="paid">Paid</label>
-            </div>
+      <label>Ticket Type:</label>
+      <div>
+        <input type="radio" id="free" name="ticketType" value="Free" checked>
+        <label for="free">Free</label>
+        <input type="radio" id="paid" name="ticketType" value="Paid">
+        <label for="paid">Paid</label>
+      </div>
 
-            <div id="priceField" style="display: none;">
-                <input type="number" id="price" placeholder="Ticket Price ($)" min="0">
-            </div>
+      <div id="priceField" style="display: none;">
+        <input type="number" id="price" placeholder="Ticket Price ($)" min="0">
+      </div>
 
-            <button type="submit" class="btn-primary">Preview Event</button>
-        </form>
-    </section>
+      <button type="submit" class="btn-primary">Preview Event</button>
+    </form>
+  </section>
 
-    <section id="preview" class="section container" style="display: none;">
-        <h2 class="section-title">Event Preview</h2>
-        <div id="preview-content" class="card"></div>
-        <button id="publish-btn" class="btn-primary">Publish Event</button>
-    </section>
+  <section id="preview" class="section container" style="display: none;">
+    <h2 class="section-title">Event Preview</h2>
+    <div id="preview-content" class="card"></div>
+    <button id="publish-btn" class="btn-primary">Publish Event</button>
+  </section>
 
-    <footer>
-        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
-    </footer>
+  <footer>
+    <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+  </footer>
 
-    <script>
-        // show create and publish only for organizer
-                (function(){
-        try {
-            const a = JSON.parse(localStorage.getItem('auth') || 'null');
-            if (!a || a.role !== 'organizer') {
-            location.href = '404NotFoundLogin.html';
-            }
-        } catch (e) {
-            location.href = '404NotFoundLogin.html';
+  <script>
+     // show create and publish only for organizer
+    (function(){
+      try {
+        const a = JSON.parse(localStorage.getItem('auth') || 'null');
+        if (!a || a.role !== 'organizer') {
+          location.href = '404NotFoundLogin.html';
         }
-        })();
-        const __auth_isOrganizer = (()=>{ 
-        try { const a = JSON.parse(localStorage.getItem('auth')||'null'); return a && a.role === 'organizer'; } 
-        catch(e){ return false; } 
-        })();
-        try { if(!__auth_isOrganizer){ publishBtn.style.display = 'none'; } } catch(e){}
-        const form = document.getElementById('create-event-form');
-        const priceField = document.getElementById('priceField');
-        const preview = document.getElementById('preview');
-        const previewContent = document.getElementById('preview-content');
-        const priceInput = document.getElementById('price');
-        const publishBtn = document.getElementById('publish-btn');
-        const dateInput = document.getElementById('date');
-        let __lastEventForPublish = null;
-        function __toISO(dateStr, timeStr){
-        const [y,m,d]=dateStr.split('-').map(Number);
-        const [hh,mm]=(timeStr||"00:00").split(':').map(Number);
-        const dt=new Date(y,(m||1)-1,d||1,hh||0,mm||0,0);
-        return dt.toISOString();
-}
+      } catch (e) {
+        location.href = '404NotFoundLogin.html';
+      }
+    })();
 
-        // 🗓️ Prevent selecting past dates
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.setAttribute('min', today);
+    const form = document.getElementById('create-event-form');
+    const priceField = document.getElementById('priceField');
+    const preview = document.getElementById('preview');
+    const previewContent = document.getElementById('preview-content');
+    const priceInput = document.getElementById('price');
+    const publishBtn = document.getElementById('publish-btn');
+    const dateInput = document.getElementById('date');
 
-        // 💵 Show or hide price field
-        document.getElementById('paid').addEventListener('change', () => {
-            priceField.style.display = 'block';
-            priceInput.required = true;
-        });
-        document.getElementById('free').addEventListener('change', () => {
-            priceField.style.display = 'none';
-            priceInput.required = false;
-            priceInput.value = '';
-        });
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", today);
 
-        // 🧾 Handle preview
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
+    document.getElementById("paid").addEventListener("change", () => {
+      priceField.style.display = "block";
+      priceInput.required = true;
+    });
+    document.getElementById("free").addEventListener("change", () => {
+      priceField.style.display = "none";
+      priceInput.required = false;
+      priceInput.value = "";
+    });
 
-            const startTime = document.getElementById('timeStart').value;
-            const endTime = document.getElementById('timeEnd').value;
-            const timeDisplay = endTime ? `${startTime} – ${endTime}` : `${startTime} – Late`;
+    let __lastEventForPublish = null;
 
-            const eventData = {
-                title: document.getElementById('title').value,
-                organizer: document.getElementById('organizer').value,
-                description: document.getElementById('description').value,
-                date: document.getElementById('date').value,
-                time: timeDisplay,
-                location: document.getElementById('location').value,
-                capacity: document.getElementById('capacity').value,
-                ticketType: document.querySelector('input[name="ticketType"]:checked').value,
-                price: priceInput.value || 'Free'
-            };
-            // keeping copy of the event for publishing
-            (function(){
-            try{
-                const dateVal = document.getElementById('date').value;
-                const startVal = document.getElementById('timeStart').value;
-                const endVal = document.getElementById('timeEnd').value;
-                const startISO = __toISO(dateVal, startVal);
-                let endISO = endVal ? __toISO(dateVal, endVal) : (function(){
-                const t = new Date(startISO); t.setHours(t.getHours()+2); return t.toISOString();
-                })();
-                __lastEventForPublish = {
-                name: eventData.title,
-                organization: eventData.organizer,
-                location: eventData.location,
-                price: (eventData.ticketType==='Paid') ? Number(eventData.price||0) : 0,
-                type: "Custom",
-                date: dateVal,
-                start: startISO,
-                end: endISO,
-                capacity: Number(eventData.capacity||0),
-                description: eventData.description
-                };
-            }catch(e){ /* ignore errors */ }
-            })();
-            previewContent.innerHTML = `
-                <h4>${eventData.title}</h4>
-                <p><strong>Organizer:</strong> ${eventData.organizer}</p>
-                <p>${eventData.description}</p>
-                <p>📅 ${eventData.date} at ${eventData.time}</p>
-                <p>📍 ${eventData.location}</p>
-                <p>🎟️ Capacity: ${eventData.capacity}</p>
-                <p>💵 ${eventData.ticketType === 'Paid' ? '$' + eventData.price : 'Free'}</p>
-            `;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
 
-            preview.style.display = 'block';
-            preview.scrollIntoView({ behavior: 'smooth' });
+      const startTime = document.getElementById("timeStart").value;
+      const endTime = document.getElementById("timeEnd").value;
+      const timeDisplay = endTime ? `${startTime} – ${endTime}` : `${startTime} – Late`;
+
+      const eventData = {
+        title: document.getElementById('title').value,
+        organizer: document.getElementById('organizer').value,
+        description: document.getElementById('description').value,
+        date: document.getElementById('date').value,
+        time: timeDisplay,
+        location: document.getElementById('location').value,
+        capacity: document.getElementById('capacity').value,
+        ticketType: document.querySelector('input[name="ticketType"]:checked').value,
+        price: priceInput.value || 'Free'
+      };
+
+      __lastEventForPublish = eventData;
+
+      previewContent.innerHTML = `
+        <h4>${eventData.title}</h4>
+        <p><strong>Organizer:</strong> ${eventData.organizer}</p>
+        <p>${eventData.description}</p>
+        <p>📅 ${eventData.date} at ${eventData.time}</p>
+        <p>📍 ${eventData.location}</p>
+        <p>🎟️ Capacity: ${eventData.capacity}</p>
+        <p>💵 ${eventData.ticketType === 'Paid' ? '$' + eventData.price : 'Free'}</p>
+      `;
+
+      preview.style.display = "block";
+      preview.scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Publish event to backend
+    publishBtn.addEventListener('click', async () => {
+      if (!__lastEventForPublish) {
+        alert("Please preview the event first.");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:5000/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(__lastEventForPublish)
         });
 
-        // 🪧 Demo publish
-        publishBtn.addEventListener('click', () => {
-        if(!__lastEventForPublish){
-            alert("Please preview the event first.");
-            return;
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("✅ Event published successfully!");
+          localStorage.setItem('highlightDate', __lastEventForPublish.date);
+          window.location.href = "SearchResults.html";
+        } else {
+          alert("❌ Failed to publish event: " + data.error);
         }
-        try{
-            const key='publishedEvents';
-            const list=JSON.parse(localStorage.getItem(key)||'[]');
-            list.push(__lastEventForPublish);
-            localStorage.setItem(key, JSON.stringify(list));
-            alert("Event published! You can find it in Search Results.");
-        }catch(e){
-            alert("Could not publish the event. " + e.message);
-        }
-        });
-    </script>
+      } catch (error) {
+        alert("⚠️ Could not reach the server. Make sure Node.js is running!");
+        console.error("Error:", error);
+      }
+    });
+  </script>
 </body>
-
 </html>

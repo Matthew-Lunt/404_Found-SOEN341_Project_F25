@@ -139,77 +139,128 @@
 </footer>
 
 <script>
-        // Require organizer login
-    (function(){
-    try{
-        const a = JSON.parse(localStorage.getItem('auth')||'null');
-        if(!a || a.role !== 'organizer'){ location.href = '404NotFoundLogin.html'; }
-    }catch(e){ location.href = '404NotFoundLogin.html'; }
-    })();
-    // CALENDAR SCRIPT 
-    const calendar = document.getElementById('calendar');
-    const monthYear = document.getElementById('monthYear');
-    const prevMonthBtn = document.getElementById('prevMonth');
-    const nextMonthBtn = document.getElementById('nextMonth');
+  // ==== CALENDAR SCRIPT ====
+  const calendar = document.getElementById('calendar');
+  const monthYear = document.getElementById('monthYear');
+  const prevMonthBtn = document.getElementById('prevMonth');
+  const nextMonthBtn = document.getElementById('nextMonth');
 
-    let currentDate = new Date();
+  let currentDate = new Date();
 
-    function renderCalendar(date) {
-        calendar.innerHTML = '';
+  function renderCalendar(date) {
+    calendar.innerHTML = '';
 
-        const year = date.getFullYear();
-        const month = date.getMonth();
+    const year = date.getFullYear();
+    const month = date.getMonth();
 
-        const firstDay = new Date(year, month, 1).getDay();
-        const lastDate = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
 
-        const monthNames = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
 
-        monthYear.textContent = `${monthNames[month]} ${year}`;
+    monthYear.textContent = `${monthNames[month]} ${year}`;
 
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        dayNames.forEach(day => {
-            const div = document.createElement('div');
-            div.classList.add('calendar-day-name');
-            div.textContent = day;
-            calendar.appendChild(div);
-        });
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    dayNames.forEach(day => {
+      const div = document.createElement('div');
+      div.classList.add('calendar-day-name');
+      div.textContent = day;
+      calendar.appendChild(div);
+    });
 
-        // Empty slots before first day
-        for (let i = 0; i < firstDay; i++) {
-            const empty = document.createElement('div');
-            empty.classList.add('calendar-day', 'empty-day');
-            calendar.appendChild(empty);
-        }
-
-        // Days of the month
-        for (let day = 1; day <= lastDate; day++) {
-            const dayDiv = document.createElement('div');
-            dayDiv.classList.add('calendar-day');
-            dayDiv.textContent = day;
-            calendar.appendChild(dayDiv);
-        }
+    // Empty slots before first day
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.classList.add('calendar-day', 'empty-day');
+      calendar.appendChild(empty);
     }
 
-    prevMonthBtn.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar(currentDate);
-    });
+    // Days of the month
+    for (let day = 1; day <= lastDate; day++) {
+      const dayDiv = document.createElement('div');
+      dayDiv.classList.add('calendar-day');
+      dayDiv.textContent = day;
+      calendar.appendChild(dayDiv);
+    }
+  }
 
-    nextMonthBtn.addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar(currentDate);
-    });
+  // Loads events from backend
+  async function loadEvents() {
+    try {
+      const response = await fetch("http://localhost:5000/api/events");
+      const events = await response.json();
+      console.log(" Events loaded:", events);
 
+      highlightEvents(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  }
+
+  // Marks days that have events
+  function highlightEvents(events) {
+    const calendarDays = document.querySelectorAll(".calendar-day");
+
+    events.forEach(event => {
+      
+      const [year, month, day] = event.date.split("-").map(Number);
+
+      // current displayed month/year
+      if (
+        month - 1 === currentDate.getMonth() &&
+        year === currentDate.getFullYear()
+      ) {
+        calendarDays.forEach(dayDiv => {
+          if (
+            !dayDiv.classList.contains("empty-day") &&
+            parseInt(dayDiv.textContent) === day
+          ) {
+            const marker = document.createElement("div");
+            marker.textContent = event.title;
+            marker.style.backgroundColor = "#007bff";
+            marker.style.color = "white";
+            marker.style.fontSize = "12px";
+            marker.style.borderRadius = "4px";
+            marker.style.padding = "2px";
+            marker.style.marginTop = "5px";
+            marker.style.overflow = "hidden";
+            marker.style.textOverflow = "ellipsis";
+            marker.style.whiteSpace = "nowrap";
+
+            dayDiv.appendChild(marker);
+          }
+        });
+      }
+    });
+  }
+
+  // Move to previous month
+  prevMonthBtn.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
+    loadEvents();
+  });
 
-    document.getElementById("create-event-btn").addEventListener("click", () => {
-        window.location.href = "CreateEvent.html"; // Redirect to the event creation page
-    });
+  // Move to next month
+  nextMonthBtn.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar(currentDate);
+    loadEvents();
+  });
+
+  // Initial page setup
+  renderCalendar(currentDate);
+  loadEvents();
+
+  // "Create New Event" button
+  document.getElementById("create-event-btn").addEventListener("click", () => {
+    window.location.href = "CreateEvent.html";
+  });
 </script>
+
 </body>
 
 </html>
