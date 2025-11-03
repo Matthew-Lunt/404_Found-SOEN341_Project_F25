@@ -17,7 +17,38 @@
             </nav>
         </div>
     </header>
-
+    <script>
+        (function(){
+          const nav = document.querySelector('header nav');
+          if(!nav) return;
+        
+          const auth = JSON.parse(localStorage.getItem('auth')||'null');
+          // remove existing Login button if present
+          const loginLink = [...nav.querySelectorAll('a')].find(a=>/404NotFoundLogin\.html/.test(a.getAttribute('href')||''));
+          if (auth && loginLink) loginLink.remove();
+        
+          // keeps Home/Search always visible; no redirects
+          const wrap = document.createElement('span');
+          wrap.style.marginLeft = '10px';
+          wrap.innerHTML = auth
+            ? `<span style="padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:.9rem;">
+                 ${auth.role.toUpperCase()}
+               </span>
+               <button id="logoutBtn" class="btn-secondary" style="margin-left:8px;">Logout</button>`
+            : `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
+        
+          nav.appendChild(wrap);
+        
+          nav.addEventListener('click', (e)=>{
+            if(e.target && e.target.id==='logoutBtn'){
+              e.preventDefault();
+              localStorage.removeItem('auth'); // **does not** block Home/Search
+              alert('Logged out.');
+              location.reload();
+            }
+          });
+        })();
+        </script>
     <section class="section container">
         <h2 class="section-title">Filter Events</h2>
         <form id="filter-form" class="form" style="gap:8px;display:flex;flex-wrap:wrap;align-items:center;">
@@ -131,6 +162,16 @@
 
             const ticketID = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
             window.location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}`;
+        });
+        resultsDiv.addEventListener("click", e => {
+            const btn = e.target.closest(".buy-btn");
+            if (!btn) return;
+            const name = btn.dataset.name;
+            const ev = events.find(x => x.name === name);
+            if (!ev) return;
+            const ticketID = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+            const type = ev.price === 0 ? 'FREE' : 'PAID';
+            location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&type=${type}`;
         });
     </script>
 

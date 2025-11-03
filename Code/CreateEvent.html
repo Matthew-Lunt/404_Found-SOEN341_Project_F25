@@ -33,7 +33,38 @@
       </nav>
     </div>
   </header>
-
+  <script>
+    (function(){
+      const nav = document.querySelector('header nav');
+      if(!nav) return;
+    
+      const auth = JSON.parse(localStorage.getItem('auth')||'null');
+      // remove existing Login button if present
+      const loginLink = [...nav.querySelectorAll('a')].find(a=>/404NotFoundLogin\.html/.test(a.getAttribute('href')||''));
+      if (auth && loginLink) loginLink.remove();
+    
+      // keeps Home/Search always visible; no redirects
+      const wrap = document.createElement('span');
+      wrap.style.marginLeft = '10px';
+      wrap.innerHTML = auth
+        ? `<span style="padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:.9rem;">
+             ${auth.role.toUpperCase()}
+           </span>
+           <button id="logoutBtn" class="btn-secondary" style="margin-left:8px;">Logout</button>`
+        : `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
+    
+      nav.appendChild(wrap);
+    
+      nav.addEventListener('click', (e)=>{
+        if(e.target && e.target.id==='logoutBtn'){
+          e.preventDefault();
+          localStorage.removeItem('auth'); // **does not** block Home/Search
+          alert('Logged out.');
+          location.reload();
+        }
+      });
+    })();
+    </script>
   <section class="section container">
     <h2 class="section-title">Create an Event</h2>
 
