@@ -180,31 +180,61 @@
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   }
 
-  function openTicketModal(ev,type){
-    ticketModal.style.display='block';
-    qrContainer.innerHTML='';
-    const rand=Math.floor(Math.random()*9000)+1000;
-    const code=`TICKET-${rand}-${type}`;
-    new QRCode(qrContainer,{text:code,width:200,height:200,correctLevel:QRCode.CorrectLevel.H});
-    ticketMeta.textContent=`${ev.name} • ${ev.location} • ${code}`;
-    document.getElementById('downloadIcsBtn').onclick=()=>downloadICS(ev);
-    document.getElementById('downloadPngBtn').onclick=()=>{
-      const canvas=qrContainer.querySelector('canvas');
-      if(canvas){
-        const ctx=canvas.getContext('2d');
-        ctx.fillStyle='white';
-        ctx.fillRect(canvas.width/2-30,canvas.height/2-30,60,60);
-        ctx.fillStyle='black';
-        ctx.font='bold 18px Arial';
-        ctx.textAlign='center';
-        ctx.fillText('TIX',canvas.width/2,canvas.height/2+6);
-        const a=document.createElement('a');
-        a.href=canvas.toDataURL('image/png');
-        a.download=`${code}.png`;
-        a.click();
-      }
-    };
+  function openTicketModal(ev, type){
+  ticketModal.style.display = 'block';
+  qrContainer.innerHTML = '';
+
+  const rand = Math.floor(Math.random()*9000) + 1000;
+  const code = `TICKET-${rand}-${type}`;
+
+  new QRCode(qrContainer, {
+    text: code,
+    width: 200,
+    height: 200,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  ticketMeta.textContent = `${ev.name} • ${ev.location} • ${code}`;
+
+  // persist for analytics
+  const attendees = JSON.parse(localStorage.getItem('attendees') || '[]');
+  attendees.push({
+    event: ev.name,
+    code,
+    status: 'issued',
+    tsIssued: Date.now(),
+    eventDate: ev.date || (ev.start ? ev.start.slice(0,10) : ''),
+    capacity: null
+  });
+  localStorage.setItem('attendees', JSON.stringify(attendees));
+
+  const catalog = JSON.parse(localStorage.getItem('eventsCatalog') || '[]');
+  if (!catalog.find(x => x.title === ev.name)) {
+    catalog.push({
+      title: ev.name,
+      date: ev.date || (ev.start ? ev.start.slice(0,10) : ''),
+      capacity: null
+    });
+    localStorage.setItem('eventsCatalog', JSON.stringify(catalog));
   }
+
+  document.getElementById('downloadIcsBtn').onclick = () => downloadICS(ev);
+  document.getElementById('downloadPngBtn').onclick = () => {
+    const canvas = qrContainer.querySelector('canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(canvas.width/2 - 30, canvas.height/2 - 30, 60, 60);
+    ctx.fillStyle = 'black';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('TIX', canvas.width/2, canvas.height/2 + 6);
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `${code}.png`;
+    a.click();
+  };
+}
 
   document.querySelector('.close-btn').onclick=()=>ticketModal.style.display='none';
   window.onclick=e=>{if(e.target===ticketModal)ticketModal.style.display='none';};
