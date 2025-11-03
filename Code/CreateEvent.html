@@ -1,215 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Event</title>
-  <link rel="stylesheet" href="css/homepage.css">
+  <meta charset="utf-8"/>
+  <title>Create Event – 404TicketsFound</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/homepage.css"/>
+  <style>
+    body{background:#f7f8fb}
+    .wrap{max-width:960px;margin:24px auto;padding:0 16px}
+    .grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media (max-width:900px){.grid2{grid-template-columns:1fr}}
+    .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 14px rgba(20,20,20,.06)}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    input,select,textarea{padding:10px;border:1px solid #ddd;border-radius:10px;font:inherit}
+    .row{display:flex;gap:12px;align-items:center}
+    .btn{background:#7a2b3d;color:#fff;border:0;padding:10px 16px;border-radius:10px;cursor:pointer}
+    .hint{color:#666;font-size:.9rem}
+  </style>
 </head>
-
 <body>
-  <script>
-    (function () {
-      try {
-        const a = JSON.parse(localStorage.getItem('auth') || 'null');
-        if (!a || a.role !== 'organizer') {
-          // not an organizer → send to login
-          location.href = '404NotFoundLogin.html?reason=organizer_only';
-        }
-      } catch (e) {
-        location.href = '404NotFoundLogin.html?reason=organizer_only';
-      }
-    })();
-  </script>
-  <header>
-    <div class="container header-content">
-      <h1 class="logo">404TicketsFound</h1>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="SearchResults.html">Search</a>
-        <a href="CreateEvent.html" class="active">Create Event</a>
-        <a href="organizer.html">Organizer Dashboard</a>
-      </nav>
+<script>
+  const auth = JSON.parse(localStorage.getItem('auth')||'null');
+  if(!auth || auth.role!=='organizer') location.href='404NotFoundLogin.html?reason=organizer_only';
+</script>
+
+<header>
+  <div class="container header-content">
+    <h1 class="logo">404TicketsFound</h1>
+    <nav>
+      <a href="index.html#events">Home</a>
+      <a href="SearchResults.html">Search</a>
+      <a class="active" href="CreateEvent.html">Create Event</a>
+      <a href="organizer.html">Organizer Dashboard</a>
+    </nav>
+  </div>
+</header>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h2>Create Event</h2>
+
+  <div class="grid2">
+    <div class="card">
+      <form id="createForm" novalidate>
+        <input id="title" class="full" type="text" placeholder="Event title" required/>
+        <input id="location" class="full" type="text" placeholder="Location (City, ST)" required/>
+        <input id="organization" class="full" type="text" placeholder="Organization" value="Organizer"/>
+        <select id="type">
+          <option>Concert</option><option>Festival</option><option>Sports</option><option>Other</option>
+        </select>
+        <input id="price" type="number" min="0" step="1" placeholder="Price (0=Free)" value="0"/>
+        <input id="capacity" type="number" min="0" step="1" placeholder="Capacity" value="0"/>
+        <input id="date" type="date" required/>
+        <input id="start" type="time" value="18:00"/>
+        <input id="end" type="time" value="21:00"/>
+        <textarea id="desc" class="full" rows="3" placeholder="Description (optional)"></textarea>
+        <div class="row full" style="justify-content:flex-end">
+          <button id="publishBtn" class="btn" type="button">Publish Event</button>
+        </div>
+        <p class="hint full">After publish you’ll be redirected to Search with this event highlighted.</p>
+      </form>
     </div>
-  </header>
-  <script>
-    (function(){
-      const nav = document.querySelector('header nav');
-      if(!nav) return;
-    
-      const auth = JSON.parse(localStorage.getItem('auth')||'null');
-      // remove existing Login button if present
-      const loginLink = [...nav.querySelectorAll('a')].find(a=>/404NotFoundLogin\.html/.test(a.getAttribute('href')||''));
-      if (auth && loginLink) loginLink.remove();
-    
-      // keeps Home/Search always visible; no redirects
-      const wrap = document.createElement('span');
-      wrap.style.marginLeft = '10px';
-      wrap.innerHTML = auth
-        ? `<span style="padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:.9rem;">
-             ${auth.role.toUpperCase()}
-           </span>
-           <button id="logoutBtn" class="btn-secondary" style="margin-left:8px;">Logout</button>`
-        : `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
-    
-      nav.appendChild(wrap);
-    
-      nav.addEventListener('click', (e)=>{
-        if(e.target && e.target.id==='logoutBtn'){
-          e.preventDefault();
-          localStorage.removeItem('auth'); // **does not** block Home/Search
-          alert('Logged out.');
-          location.reload();
-        }
-      });
-    })();
-    </script>
-  <section class="section container">
-    <h2 class="section-title">Create an Event</h2>
 
-    <form id="create-event-form" class="form">
-      <input type="text" id="title" placeholder="Event Title" required>
-      <input type="text" id="organizer" placeholder="Organizer Name" required>
-      <textarea id="description" rows="3" placeholder="Event Description" required></textarea>
-
-      <label for="date">Date:</label>
-      <input type="date" id="date" required>
-
-      <label for="timeStart">Start Time:</label>
-      <input type="time" id="timeStart" required>
-
-      <label for="timeEnd">End Time (optional):</label>
-      <input type="time" id="timeEnd" placeholder="Leave blank for 'Late'">
-
-      <input type="text" id="location" placeholder="Location" required>
-      <input type="number" id="capacity" placeholder="Ticket Capacity" min="1" required>
-
-      <label>Ticket Type:</label>
-      <div>
-        <input type="radio" id="free" name="ticketType" value="Free" checked>
-        <label for="free">Free</label>
-        <input type="radio" id="paid" name="ticketType" value="Paid">
-        <label for="paid">Paid</label>
+    <div class="card" id="preview">
+      <h3 style="margin:0 0 8px">Preview</h3>
+      <div class="p-title" style="font-weight:700;font-size:1.1rem">Event title</div>
+      <div class="p-meta" style="color:#555;margin:6px 0">
+        <div id="pLoc">📍 —</div>
+        <div id="pOrg">🏢 —</div>
+        <div id="pDate">📅 —</div>
+        <div id="pType">🎟️ —</div>
+        <div id="pCap">🧑‍🤝‍🧑 Capacity: —</div>
       </div>
+      <div id="pPrice" style="margin:8px 0;font-weight:700">—</div>
+      <button class="btn" type="button" disabled>Buy / Claim (preview)</button>
+    </div>
+  </div>
+</div>
 
-      <div id="priceField" style="display: none;">
-        <input type="number" id="price" placeholder="Ticket Price ($)" min="0">
-      </div>
+<footer><p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound</p></footer>
 
-      <button type="submit" class="btn-primary">Preview Event</button>
-    </form>
-  </section>
+<script>
+  const get=(k,f='[]')=>JSON.parse(localStorage.getItem(k)||f);
+  const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  if(!localStorage.getItem('eventsCatalog')) set('eventsCatalog',[]);
+  if(!localStorage.getItem('attendees')) set('attendees',[]);
+  if(!localStorage.getItem('eventsPublic')) set('eventsPublic',[]);
 
-  <section id="preview" class="section container" style="display: none;">
-    <h2 class="section-title">Event Preview</h2>
-    <div id="preview-content" class="card"></div>
-    <button id="publish-btn" class="btn-primary">Publish Event</button>
-  </section>
+  function toISO(d,t){ if(!d) return ''; return `${d}T${(t&&t.length?t:'18:00')}` }
+  function money(n){ n=Number(n||0); return n===0?'Free':`$${n}` }
+  function fmtRange(d,t1,t2){
+    if(!d) return '—';
+    const a=new Date(`${d}T${t1||'18:00'}`), b=new Date(`${d}T${t2||'21:00'}`);
+    const f=o=>o.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `${f(a)} → ${f(b)}`;
+  }
+  function updatePreview(){
+    const f=document.getElementById('createForm');
+    const title=f.title.value.trim()||'Event title';
+    const loc=f.location.value.trim()||'—';
+    const org=f.organization.value.trim()||'—';
+    const type=f.type.value||'Other';
+    const price=f.price.value;
+    const cap=f.capacity.value;
+    const date=f.date.value, start=f.start.value, end=f.end.value;
+    document.querySelector('#preview .p-title').textContent=title;
+    document.getElementById('pLoc').textContent=`📍 ${loc}`;
+    document.getElementById('pOrg').textContent=`🏢 ${org}`;
+    document.getElementById('pDate').textContent=`📅 ${fmtRange(date,start,end)}`;
+    document.getElementById('pType').textContent=`🎟️ ${type}`;
+    document.getElementById('pCap').textContent=`🧑‍🤝‍🧑 Capacity: ${cap||'—'}`;
+    document.getElementById('pPrice').textContent=money(price);
+  }
 
-  <footer>
-    <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
-  </footer>
+  function publishEvent(){
+    const f=document.getElementById('createForm');
+    const title=f.title.value.trim();
+    const location=f.location.value.trim();
+    const organization=f.organization.value.trim()||'Organizer';
+    const type=f.type.value||'Other';
+    const price=Number(f.price.value||0);
+    const capacity=Number(f.capacity.value||0);
+    const date=f.date.value;
+    if(!title||!location||!date){ alert('Title, location, and date are required.'); return; }
+    const startISO=toISO(date,f.start.value);
+    const endISO=toISO(date,f.end.value);
 
-  <script>
-     // show create and publish only for organizer
-    (function(){
-      try {
-        const a = JSON.parse(localStorage.getItem('auth') || 'null');
-        if (!a || a.role !== 'organizer') {
-          location.href = '404NotFoundLogin.html';
-        }
-      } catch (e) {
-        location.href = '404NotFoundLogin.html';
-      }
-    })();
+    // save to catalog (organizer + analytics)
+    const cat=get('eventsCatalog','[]');
+    const existing=cat.find(e=>e.title===title);
+    const row={ title, location, organization, type, price, capacity, date, start:startISO, end:endISO, desc:f.desc.value||'' };
+    if(existing) Object.assign(existing,row); else cat.push(row);
+    set('eventsCatalog',cat);
 
-    const form = document.getElementById('create-event-form');
-    const priceField = document.getElementById('priceField');
-    const preview = document.getElementById('preview');
-    const previewContent = document.getElementById('preview-content');
-    const priceInput = document.getElementById('price');
-    const publishBtn = document.getElementById('publish-btn');
-    const dateInput = document.getElementById('date');
+    // also save to a public list some pages can read
+    const pub=get('eventsPublic','[]');
+    const idx=pub.findIndex(e=>e.name===title);
+    const pubRow={ name:title, location, organization, type, price, date, start:startISO, end:endISO };
+    if(idx>=0) pub[idx]=pubRow; else pub.push(pubRow);
+    set('eventsPublic',pub);
 
-    const today = new Date().toISOString().split("T")[0];
-    dateInput.setAttribute("min", today);
+    alert('Event published.');
+    location.href=`SearchResults.html?event=${encodeURIComponent(title)}`;
+  }
 
-    document.getElementById("paid").addEventListener("change", () => {
-      priceField.style.display = "block";
-      priceInput.required = true;
-    });
-    document.getElementById("free").addEventListener("change", () => {
-      priceField.style.display = "none";
-      priceInput.required = false;
-      priceInput.value = "";
-    });
-
-    let __lastEventForPublish = null;
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const startTime = document.getElementById("timeStart").value;
-      const endTime = document.getElementById("timeEnd").value;
-      const timeDisplay = endTime ? `${startTime} – ${endTime}` : `${startTime} – Late`;
-
-      const eventData = {
-        title: document.getElementById('title').value,
-        organizer: document.getElementById('organizer').value,
-        description: document.getElementById('description').value,
-        date: document.getElementById('date').value,
-        time: timeDisplay,
-        location: document.getElementById('location').value,
-        capacity: document.getElementById('capacity').value,
-        ticketType: document.querySelector('input[name="ticketType"]:checked').value,
-        price: priceInput.value || 'Free'
-      };
-
-      __lastEventForPublish = eventData;
-
-      previewContent.innerHTML = `
-        <h4>${eventData.title}</h4>
-        <p><strong>Organizer:</strong> ${eventData.organizer}</p>
-        <p>${eventData.description}</p>
-        <p>📅 ${eventData.date} at ${eventData.time}</p>
-        <p>📍 ${eventData.location}</p>
-        <p>🎟️ Capacity: ${eventData.capacity}</p>
-        <p>💵 ${eventData.ticketType === 'Paid' ? '$' + eventData.price : 'Free'}</p>
-      `;
-
-      preview.style.display = "block";
-      preview.scrollIntoView({ behavior: "smooth" });
-    });
-
-    // Publish event to backend
-    publishBtn.addEventListener('click', async () => {
-      if (!__lastEventForPublish) {
-        alert("Please preview the event first.");
-        return;
-      }
-
-      try {
-        const response = await fetch("http://localhost:5000/api/events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(__lastEventForPublish)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert("✅ Event published successfully!");
-          localStorage.setItem('highlightDate', __lastEventForPublish.date);
-          window.location.href = "SearchResults.html";
-        } else {
-          alert("❌ Failed to publish event: " + data.error);
-        }
-      } catch (error) {
-        alert("⚠️ Could not reach the server. Make sure Node.js is running!");
-        console.error("Error:", error);
-      }
-    });
-  </script>
+  document.getElementById('publishBtn').addEventListener('click', publishEvent);
+  document.addEventListener('input', e=>{ if(e.target.closest('#createForm')) updatePreview() });
+  document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
 </body>
 </html>
