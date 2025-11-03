@@ -1,7 +1,7 @@
 Detailed log of each team member's contribution (document)
 
 • Matthew Lunt: I revised the login page and its throughput to the database, updated the rules of the database for security while allowing edits and addition under specific circumstances, removed unnecisary files, and resolved issues that rose from merge conflicts.
-• Kruti Patel:
+• Kruti Patel: I worked on adding Firebase to the organizer page so they can create, save, and see their events in the calendar. I tested and developed test case for each user story, generated GitHub issues for the user stories' tasks, and helped review and merge pull requests of other team members.
 • Sophie Hariri: I finalized the Admin Dashboard and Analytics with export functionality and access control, fixed role based login, and completed the story points, risks table, and system block diagram showing the user, organizer, and admin flows.
 • Pawan Kumar Gupta:
 • Zeynep Ozcan:
