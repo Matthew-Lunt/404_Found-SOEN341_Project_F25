@@ -101,9 +101,10 @@
   <div class="container">
     <h2 id="form-title">Login</h2>
 
+    <!-- LOGIN FORM -->
     <form id="login-form">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
       <select id="login-role" style="margin-top:8px;">
         <option value="user">User Account</option>
         <option value="organizer">Organizer Account</option>
@@ -112,215 +113,143 @@
       <button type="submit">Login</button>
     </form>
 
+    <!-- SIGNUP FORM -->
     <form id="signup-form" style="display: none;">
-      <!-- 🔘 Account Type Toggle -->
       <div id="type-account">
         <div class="toggle-option active" data-type="user">User Account</div>
         <div class="toggle-option" data-type="organizer">Organizer Account</div>
       </div>
-
-      <input type="text" placeholder="Full Name" required>
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
+      <input type="text" id="signup-name" placeholder="Full Name" required>
+      <input type="email" id="signup-email" placeholder="Email" required>
+      <input type="password" id="signup-password" placeholder="Password" required>
       <button type="submit">Sign Up</button>
     </form>
 
     <p class="toggle-link" id="toggle-form">Don’t have an account? Sign Up</p>
-
-    <!-- 🡠 Go Back Button -->
     <a href="index.html" class="back-btn">← Go Back</a>
+    <p id="statusMessage"></p>
   </div>
 
-  <script>
+  <!-- ✅ Firebase Auth (with working login) -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+      authDomain: "found-5ecc0.firebaseapp.com",
+      projectId: "found-5ecc0",
+      storageBucket: "found-5ecc0.appspot.com",
+      messagingSenderId: "160156481057",
+      appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
     const loginForm = document.getElementById("login-form");
     const signupForm = document.getElementById("signup-form");
     const toggleText = document.getElementById("toggle-form");
     const title = document.getElementById("form-title");
+    const statusMessage = document.getElementById("statusMessage");
 
-    // Switch between Login and Signup forms
+    // Toggle Login/Signup
+    let isLogin = true;
     toggleText.addEventListener("click", () => {
-      if (loginForm.style.display === "none") {
-        loginForm.style.display = "flex";
-        signupForm.style.display = "none";
-        title.textContent = "Login";
-        toggleText.textContent = "Don’t have an account? Sign Up";
-      } else {
-        loginForm.style.display = "none";
-        signupForm.style.display = "flex";
-        title.textContent = "Sign Up";
-        toggleText.textContent = "Already have an account? Login";
-      }
+      isLogin = !isLogin;
+      loginForm.style.display = isLogin ? "flex" : "none";
+      signupForm.style.display = isLogin ? "none" : "flex";
+      title.textContent = isLogin ? "Login" : "Sign Up";
+      toggleText.textContent = isLogin ? "Don’t have an account? Sign Up" : "Already have an account? Login";
+      statusMessage.textContent = "";
     });
 
-    // Demo login handling
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const role = (document.getElementById('login-role')||{value:'user'}).value;
-      const email = loginForm.querySelector('input[type="email"]').value.trim();
-      try { localStorage.setItem('auth', JSON.stringify({ role, email })); } catch(e) {}
-      if (role === 'admin') {
-        location.href = 'AdminManagement.html'; 
-      } else if (role === 'organizer') {
-        location.href = 'organizer.html';
-      } else {
-        location.href = 'user.html';
-      }
-    });
-
-    // Signup handling + account type
+    // Account type toggle
     const toggleWrapper = document.getElementById("type-account");
     const options = toggleWrapper.querySelectorAll(".toggle-option");
-    let accountType = "user"; // Default
-
+    let accountType = "user";
     options.forEach(option => {
       option.addEventListener("click", () => {
-        options.forEach(opt => opt.classList.remove("active"));
+        toggleWrapper.querySelector(".active").classList.remove("active");
         option.classList.add("active");
         accountType = option.dataset.type;
-        console.log("Selected account type:", accountType);
       });
     });
 
-    signupForm.addEventListener("submit", (e) => {
+    // Role fetch
+    async function getCurrentUserRole(uid) {
+      const [userDoc, orgDoc] = await Promise.all([
+        getDoc(doc(db, "Users", uid)),
+        getDoc(doc(db, "Organizers", uid))
+      ]);
+      if (userDoc.exists()) return userDoc.data().role || "user";
+      if (orgDoc.exists()) return orgDoc.data().role || "organizer";
+      return "unknown";
+    }
+
+    // --- SIGNUP ---
+    signupForm.addEventListener("submit", async e => {
       e.preventDefault();
-      alert(`Account created as ${accountType.toUpperCase()} (demo only)`);
+      const name = document.getElementById("signup-name").value.trim();
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const collectionName = accountType === "organizer" ? "Organizers" : "Users";
+
+        await setDoc(doc(db, collectionName, user.uid), {
+          name, email, role: accountType, createdAt: serverTimestamp()
+        });
+
+        statusMessage.textContent = `✅ Account created as ${accountType.toUpperCase()}! You can now log in.`;
+        signupForm.reset();
+        toggleText.click();
+      } catch (error) {
+        statusMessage.textContent = `❌ ${error.message}`;
+        console.error(error);
+      }
+    });
+
+    // --- LOGIN ---
+    loginForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const roleSelect = document.getElementById("login-role").value;
+
+      // 🔹 Direct bypass for Admin (no Firebase)
+      if (roleSelect === "admin") {
+        localStorage.setItem("auth", JSON.stringify({ email, role: "admin" }));
+        window.location.href = "AdminManagement.html";
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        let role = await getCurrentUserRole(user.uid);
+
+        // fallback if no doc
+        if (role === "unknown") role = roleSelect;
+
+        localStorage.setItem("auth", JSON.stringify({ email, role }));
+        statusMessage.textContent = `✅ Logged in as ${email} (${role})`;
+
+        if (role === "organizer") {
+          window.location.href = "organizer.html";
+        } else {
+          window.location.href = "user.html";
+        }
+
+      } catch (error) {
+        console.error(error);
+        statusMessage.textContent = `❌ ${error.message}`;
+      }
     });
   </script>
-<div class="container">
-  <h2 id="form-title">Login</h2>
-
-  <!-- LOGIN FORM -->
-  <form id="login-form">
-    <input type="email" id="login-email" placeholder="Email" required>
-    <input type="password" id="login-password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
-
-  <!-- SIGNUP FORM -->
-  <form id="signup-form" style="display: none;">
-    <div id="type-account">
-      <div class="toggle-option active" data-type="user">User Account</div>
-      <div class="toggle-option" data-type="organizer">Organizer Account</div>
-    </div>
-    <input type="text" id="signup-name" placeholder="Full Name" required>
-    <input type="email" id="signup-email" placeholder="Email" required>
-    <input type="password" id="signup-password" placeholder="Password" required>
-    <button type="submit">Sign Up</button>
-  </form>
-
-  <p class="toggle-link" id="toggle-form">Don’t have an account? Sign Up</p>
-  <a href="index.html" class="back-btn">← Go Back</a>
-  <p id="statusMessage"></p>
-</div>
-
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-
-// --- Firebase Configuration ---
-const firebaseConfig = {
-  apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
-  authDomain: "found-5ecc0.firebaseapp.com",
-  projectId: "found-5ecc0",
-  storageBucket: "found-5ecc0.appspot.com",
-  messagingSenderId: "160156481057",
-  appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// --- UI Elements ---
-const loginForm = document.getElementById("login-form");
-const signupForm = document.getElementById("signup-form");
-const toggleText = document.getElementById("toggle-form");
-const title = document.getElementById("form-title");
-const statusMessage = document.getElementById("statusMessage");
-
-// --- Toggle Login/Signup ---
-let isLogin = true;
-toggleText.addEventListener("click", () => {
-  isLogin = !isLogin;
-  loginForm.style.display = isLogin ? "flex" : "none";
-  signupForm.style.display = isLogin ? "none" : "flex";
-  title.textContent = isLogin ? "Login" : "Sign Up";
-  toggleText.textContent = isLogin ? "Don’t have an account? Sign Up" : "Already have an account? Login";
-  statusMessage.textContent = "";
-});
-
-// --- Account type toggle ---
-const toggleWrapper = document.getElementById("type-account");
-const options = toggleWrapper.querySelectorAll(".toggle-option");
-let accountType = "user";
-options.forEach(option => {
-  option.addEventListener("click", () => {
-    toggleWrapper.querySelector(".active").classList.remove("active");
-    option.classList.add("active");
-    accountType = option.dataset.type;
-  });
-});
-
-// --- Helper: get role ---
-async function getCurrentUserRole(uid) {
-  const [userDoc, orgDoc] = await Promise.all([
-    getDoc(doc(db, "Users", uid)),
-    getDoc(doc(db, "Organizers", uid))
-  ]);
-  if (userDoc.exists()) return userDoc.data().role || "user";
-  if (orgDoc.exists()) return orgDoc.data().role || "organizer";
-  return "unknown";
-}
-
-// --- SIGNUP ---
-signupForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const name = document.getElementById("signup-name").value.trim();
-  const email = document.getElementById("signup-email").value.trim();
-  const password = document.getElementById("signup-password").value;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    const collectionName = accountType === "organizer" ? "Organizers" : "Users";
-
-    await setDoc(doc(db, collectionName, user.uid), {
-      name, email, role: accountType, createdAt: serverTimestamp()
-    });
-
-    statusMessage.textContent = `✅ Account created as ${accountType.toUpperCase()}! You can now log in.`;
-    signupForm.reset();
-    toggleText.click();
-  } catch (error) {
-    statusMessage.textContent = `❌ ${error.message}`;
-    console.error(error);
-  }
-});
-
-// --- LOGIN ---
-loginForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value;
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    const role = await getCurrentUserRole(user.uid);
-    statusMessage.textContent = `✅ Logged in as ${email} (Role: ${role})`;
-
-    window.location.href = role === "organizer" ? "organizer.html" : "user.html";
-  } catch (error) {
-    statusMessage.textContent = `❌ ${error.message}`;
-    console.error(error);
-  }
-});
-
-// --- Auth state ---
-onAuthStateChanged(auth, user => {
-  statusMessage.textContent = user ? `Signed in as: ${user.email}` : "Not signed in.";
-});
-</script>
 </body>
 </html>
