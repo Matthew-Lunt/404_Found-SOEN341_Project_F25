@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    <script>
+        (function () {
+          try {
+            const a = JSON.parse(localStorage.getItem('auth') || 'null');
+            if (!a || a.role !== 'admin') {
+              location.href = '404NotFoundLogin.html?reason=admin_only';
+            }
+          } catch (e) {
+            location.href = '404NotFoundLogin.html?reason=admin_only';
+          }
+        })();
+      </script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
