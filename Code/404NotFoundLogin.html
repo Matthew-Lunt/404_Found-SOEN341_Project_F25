@@ -98,39 +98,6 @@
 </style>
 </head>
 <body>
-  <div class="container">
-    <h2 id="form-title">Login</h2>
-
-    <form id="login-form">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <select id="login-role" style="margin-top:8px;">
-        <option value="user">User Account</option>
-        <option value="organizer">Organizer Account</option>
-        <option value="admin">Admin Account</option>
-      </select>
-      <button type="submit">Login</button>
-    </form>
-
-    <form id="signup-form" style="display: none;">
-      <!-- 🔘 Account Type Toggle -->
-      <div id="type-account">
-        <div class="toggle-option active" data-type="user">User Account</div>
-        <div class="toggle-option" data-type="organizer">Organizer Account</div>
-      </div>
-
-      <input type="text" placeholder="Full Name" required>
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <button type="submit">Sign Up</button>
-    </form>
-
-    <p class="toggle-link" id="toggle-form">Don’t have an account? Sign Up</p>
-
-    <!-- 🡠 Go Back Button -->
-    <a href="index.html" class="back-btn">← Go Back</a>
-  </div>
-
   <script>
     const loginForm = document.getElementById("login-form");
     const signupForm = document.getElementById("signup-form");
