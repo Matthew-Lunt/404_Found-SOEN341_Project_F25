@@ -3,7 +3,7 @@ Detailed log of each team member's contribution (document)
 • Matthew Lunt: I revised the login page and its throughput to the database, updated the rules of the database for security while allowing edits and addition under specific circumstances, removed unnecisary files, and resolved issues that rose from merge conflicts.
 • Kruti Patel: I worked on adding Firebase to the organizer page so they can create, save, and see their events in the calendar. I tested and developed test case for each user story, generated GitHub issues for the user stories' tasks, and helped review and merge pull requests of other team members.
 • Sophie Hariri: I finalized the Admin Dashboard and Analytics with export functionality and access control and fixed role based login. I completed the story points and risks table. I did the system block diagram showing the user, organizer, and admin flows. I worked on organizer event analytics and tools and reviewed and merged pull requests.
-• Pawan Kumar Gupta:
+• Pawan Kumar Gupta: I added the AdminAnalytics.html, AdminManagement.html, AdministratorAnalytics.css, AdministratorManagement.css files, tried adding to the acceptance tests.
 • Zeynep Ozcan:
 • Shadman Chowdhury: I set up a fonctionning qr code generator for when a ticket is bough that brings you to a confirmation page with a unique ticket id. I setup the foundation for a friend search option. I helped with cleaning up the code, resolved merging issues and discussed plans with the team.
 • Gracie Idonije: I added the admin.html page, updated the navigation on index.html to link to it, implemented the front-end functionality for managing organizations with role assignment and deletion, and ensured the interface displays a message when no organizations are present.
