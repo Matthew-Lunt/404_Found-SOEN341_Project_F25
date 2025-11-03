@@ -1,115 +1,145 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ticket Confirmation</title>
-  <link rel="stylesheet" href="css/homepage.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-  <style>
-    body{font-family:Arial, sans-serif;text-align:center;padding:36px}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.9rem}
-    .free{background:#e8f5e9;color:#256029;border:1px solid #c8e6c9}
-    .paid{background:#fff3cd;color:#7a5d00;border:1px solid #ffe8a1}
-    #qrcode{margin:24px auto;width:200px;height:200px;display:flex;justify-content:center;align-items:center}
-    .row{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket Confirmation</title>
+    <link rel="stylesheet" href="css/homepage.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 36px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: .9rem;
+        }
+
+        .free {
+            background: #e8f5e9;
+            color: #256029;
+            border: 1px solid #c8e6c9;
+        }
+
+        .paid {
+            background: #fff3cd;
+            color: #7a5d00;
+            border: 1px solid #ffe8a1;
+        }
+
+        #qrcode {
+            margin: 24px auto;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 <body>
-  <h1>🎟️ Ticket Confirmation</h1>
-  <h2 id="ticketText">You have bought a ticket!</h2>
-  <div id="typeBadge"></div>
-  <p id="ticketNum" style="font-family:ui-monospace,monospace;margin-top:6px"></p>
+    <h1>🎟️ Ticket Confirmation</h1>
+    <h2 id="ticketText">You have bought a ticket!</h2>
+    <div id="typeBadge"></div>
+    <p id="ticketNum" style="font-family:ui-monospace,monospace;margin-top:6px"></p>
 
-  <div id="qrcode"></div>
-  <div class="row">
-    <button id="downloadQR" class="btn-primary" type="button">Download QR</button>
-    <button id="addIcs" class="btn-primary" type="button">Add to Calendar (.ics)</button>
-  </div>
+    <div id="qrcode"></div>
+    <div class="row">
+        <button id="downloadQR" class="btn-primary" type="button">Download QR</button>
+        <button id="addIcs" class="btn-primary" type="button">Add to Calendar (.ics)</button>
+    </div>
 
-  <div style="margin-top:20px">
-    <a href="SearchResults.html" class="btn-secondary">Back to Search</a>
-    <a href="index.html" class="btn-secondary">Home</a>
-  </div>
+    <div style="margin-top:20px">
+        <a href="SearchResults.html" class="btn-secondary">Back to Search</a>
+        <a href="index.html" class="btn-secondary">Home</a>
+    </div>
 
-  <script>
-    function pad(n){return String(n).padStart(2,'0')}
-    function toICSDate(dt){
-      const d = new Date(dt);
-      return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+
-             'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z';
-    }
-    function downloadICS(ev){
-      const lines=[
-        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//404TicketsFound//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',
-        'BEGIN:VEVENT',
-        'UID:'+('evt-'+Math.random().toString(36).slice(2)+'@404ticketsfound'),
-        'DTSTAMP:'+toICSDate(new Date().toISOString()),
-        'DTSTART:'+toICSDate(ev.start||ev.date+'T18:00:00Z'),
-        'DTEND:'+toICSDate(ev.end||ev.date+'T21:00:00Z'),
-        'SUMMARY:'+ev.name.replace(/[,;]/g,' '),
-        'LOCATION:'+ev.location.replace(/[,;]/g,' '),
-        'DESCRIPTION:Ticketed via 404TicketsFound',
-        'END:VEVENT','END:VCALENDAR'
-      ];
-      const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
-      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-      a.download=(ev.name.replace(/\s+/g,'_'))+'.ics'; a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href),0);
-    }
+    <script>
+        function pad(n) { return String(n).padStart(2, '0') }
+        function toICSDate(dt) {
+            const d = new Date(dt);
+            return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) +
+                'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z';
+        }
+        function downloadICS(ev) {
+            const lines = [
+                'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//404TicketsFound//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+                'BEGIN:VEVENT',
+                'UID:' + ('evt-' + Math.random().toString(36).slice(2) + '@404ticketsfound'),
+                'DTSTAMP:' + toICSDate(new Date().toISOString()),
+                'DTSTART:' + toICSDate(ev.start || ev.date + 'T18:00:00Z'),
+                'DTEND:' + toICSDate(ev.end || ev.date + 'T21:00:00Z'),
+                'SUMMARY:' + ev.name.replace(/[,;]/g, ' '),
+                'LOCATION:' + ev.location.replace(/[,;]/g, ' '),
+                'DESCRIPTION:Ticketed via 404TicketsFound',
+                'END:VEVENT', 'END:VCALENDAR'
+            ];
+            const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = (ev.name.replace(/\s+/g, '_')) + '.ics'; a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 0);
+        }
 
-    window.addEventListener('DOMContentLoaded', ()=>{
-      const p = new URLSearchParams(location.search);
-      const eventName = p.get('event') || 'Event';
-      const ticketID  = p.get('id')    || (Date.now().toString(36));
-      const type      = (p.get('type') || 'PAID').toUpperCase();
+        window.addEventListener('DOMContentLoaded', () => {
+            const p = new URLSearchParams(location.search);
+            const eventName = p.get('event') || 'Event';
+            const ticketID = p.get('id') || (Date.now().toString(36));
+            const type = (p.get('type') || 'PAID').toUpperCase();
 
-      // Display texts
-      document.getElementById('ticketText').textContent = `You have a ticket for ${eventName}`;
-      document.getElementById('typeBadge').innerHTML =
-        `<span class="badge ${type==='FREE'?'free':'paid'}">${type}</span>`;
+            // Display texts
+            document.getElementById('ticketText').textContent = `You have a ticket for ${eventName}`;
+            document.getElementById('typeBadge').innerHTML =
+                `<span class="badge ${type === 'FREE' ? 'free' : 'paid'}">${type}</span>`;
 
-      // Human  ticket code + QR
-      const rand = Math.floor(Math.random()*9000)+1000;
-      const code = `TICKET-${rand}-${type}`;
-      document.getElementById('ticketNum').textContent = code;
+            // Human readable ticket code
+            const code = `TICKET-${ticketID}-${type}`;
+            document.getElementById('ticketNum').textContent = code;
 
-      const qrDiv = document.getElementById('qrcode');
-      new QRCode(qrDiv,{ text: code, width:200, height:200, correctLevel: QRCode.CorrectLevel.H });
+            // ✅ QR Code links to your GitHub success page with event + id
+            const qrURL = `https://shad2512.github.io/green-success/?event=${encodeURIComponent(eventName)}&id=${ticketID}`;
 
-      // Persist to localStorage for organizer analytics
-      const attendees = JSON.parse(localStorage.getItem('attendees')||'[]');
-      attendees.push({ event:eventName, code, status:'issued', tsIssued:Date.now(), eventDate:'', capacity:null });
-      localStorage.setItem('attendees', JSON.stringify(attendees));
+            const qrDiv = document.getElementById('qrcode');
+            new QRCode(qrDiv, { text: qrURL, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
 
-      const catalog = JSON.parse(localStorage.getItem('eventsCatalog')||'[]');
-      if(!catalog.find(x=>x.title===eventName)){
-        catalog.push({ title:eventName, date:'', capacity:null });
-        localStorage.setItem('eventsCatalog', JSON.stringify(catalog));
-      }
+            // Persist to localStorage for organizer analytics
+            const attendees = JSON.parse(localStorage.getItem('attendees') || '[]');
+            attendees.push({ event: eventName, code, status: 'issued', tsIssued: Date.now(), eventDate: '', capacity: null });
+            localStorage.setItem('attendees', JSON.stringify(attendees));
 
-      // Allow download QR
-      document.getElementById('downloadQR').addEventListener('click', ()=>{
-        const canvas = qrDiv.querySelector('canvas'); if(!canvas) return;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle='white';
-        ctx.fillRect(canvas.width/2-30,canvas.height/2-30,60,60);
-        ctx.fillStyle='black';
-        ctx.font='bold 18px Arial';
-        ctx.textAlign='center';
-        ctx.fillText('TIX',canvas.width/2,canvas.height/2+6);
+            const catalog = JSON.parse(localStorage.getItem('eventsCatalog') || '[]');
+            if (!catalog.find(x => x.title === eventName)) {
+                catalog.push({ title: eventName, date: '', capacity: null });
+                localStorage.setItem('eventsCatalog', JSON.stringify(catalog));
+            }
 
-        const a=document.createElement('a');
-        a.href=canvas.toDataURL('image/png');
-        a.download=`${code}.png`;
-        a.click();
-      });
+            // Download QR button
+            document.getElementById('downloadQR').addEventListener('click', () => {
+                const canvas = qrDiv.querySelector('canvas'); if (!canvas) return;
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                a.download = `${code}.png`;
+                a.click();
+            });
 
-      // Add to Calendar (.ics)
-      document.getElementById('addIcs').addEventListener('click', ()=>{
-        downloadICS({ name:eventName, date:new Date().toISOString().slice(0,10), location:'TBA' });
-      });
-    });
-  </script>
+            // Add to Calendar button
+            document.getElementById('addIcs').addEventListener('click', () => {
+                downloadICS({ name: eventName, date: new Date().toISOString().slice(0, 10), location: 'TBA' });
+            });
+        });
+    </script>
 </body>
 </html>
