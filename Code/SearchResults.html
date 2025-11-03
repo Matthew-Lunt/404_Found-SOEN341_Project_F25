@@ -74,15 +74,12 @@
     { name: "Jazz Night", location: "Quebec City, QC", organization: "BlueNote Productions", price: 0, type: "Concert", date: "2025-11-18", start: "2025-11-18T20:00:00-05:00", end: "2025-11-18T23:00:00-05:00" },
     { name: "Winter Carnival", location: "Calgary, AB", organization: "CityFest", price: 0, type: "Festival", date: "2025-12-05", start: "2025-12-05T10:00:00-07:00", end: "2025-12-05T20:00:00-07:00" }
   ];
-    // merge organizer-published events
-  try{
-    const __published = JSON.parse(localStorage.getItem('publishedEvents')||'[]');
-    if (Array.isArray(__published) && __published.length) { events.push(...__published); }
-  }catch(e){ /* ignore */ }
-    const __auth_isOrganizer = (()=>{ 
+
+  const __auth_isOrganizer = (()=>{ 
     try { const a = JSON.parse(localStorage.getItem('auth')||'null'); return a && a.role === 'organizer'; } 
     catch(e){ return false; } 
   })();
+
   const form=document.getElementById("filter-form");
   const resultsDiv=document.getElementById("results");
   const resultsTitle=document.getElementById("results-title");
@@ -97,27 +94,51 @@
 
   function cardHTML(ev){
     const formattedDate=new Date(ev.date).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});
-    const ticketButton=ev.price===0
+    const ticketButton=ev.price===0||ev.price==="Free"
       ? `<button class="btn-primary claim-btn" data-type="FREE" data-name="${ev.name}">Claim Free</button>`
       : `<button class="btn-primary claim-btn" data-type="MOCKPAID" data-name="${ev.name}">Mock Paid</button>`;
     return `
       <div class="card">
-        <h4>${ev.name}</h4>
-        <p>📍 ${ev.location}</p>
-        <p>🏢 ${ev.organization}</p>
+        <h4>${ev.name || ev.title}</h4>
+        <p>📍 ${ev.location || "N/A"}</p>
+        <p>🏢 ${ev.organization || ev.organizer || "Unknown"}</p>
         <p>📅 ${formattedDate}</p>
-        <p>💵 ${ev.price===0?"Free":"$"+ev.price}</p>
-        <p>🎟️ ${ev.type}</p>
+        <p>💵 ${ev.price===0||ev.price==="Free"?"Free":"$"+ev.price}</p>
+        <p>🎟️ ${ev.type || ev.ticketType || "General"}</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
           ${ticketButton}
-          <button class="btn-secondary cal-btn" data-name="${ev.name}">Add to Calendar</button>
-          ${__auth_isOrganizer ? `<button class="btn-danger delete-btn" data-name="${ev.name}">Delete</button>` : ``}
+          <button class="btn-secondary cal-btn" data-name="${ev.name || ev.title}" data-date="${ev.date}">📆 View on Calendar</button>
+          ${__auth_isOrganizer ? `<button class="btn-danger delete-btn" data-name="${ev.name || ev.title}">Delete</button>` : ``}
         </div>
       </div>`;
   }
 
   function displayEvents(list){resultsDiv.innerHTML=list.map(cardHTML).join("");}
-  displayEvents(events);
+
+  // Load from backend Firestore (via Node server)
+  async function loadBackendEvents() {
+    try {
+      const res = await fetch("http://localhost:5000/api/events");
+      const backendEvents = await res.json();
+      console.log("🔥 Loaded events from Firestore:", backendEvents);
+      events.push(...backendEvents.map(e => ({
+        name: e.title,
+        organization: e.organizer,
+        location: e.location,
+        price: e.price === "Free" ? 0 : Number(e.price),
+        type: e.ticketType || "General",
+        date: e.date,
+        start: e.start || "",
+        end: e.end || ""
+      })));
+      displayEvents(events);
+    } catch (err) {
+      console.error("❌ Could not fetch backend events:", err);
+      displayEvents(events); 
+    }
+  }
+
+  loadBackendEvents();
 
   form.addEventListener("submit",(e)=>{
     e.preventDefault();
@@ -129,10 +150,11 @@
     const allDates=allDatesEl.checked;
     const eventDate=eventDateEl.value;
     const filtered=events.filter(ev=>{
-      const matchesLocation=ev.location.toLowerCase().includes(location);
-      const matchesOrg=ev.organization.toLowerCase().includes(organization);
-      const matchesPrice=ev.price>=minPrice&&ev.price<=maxPrice;
-      const matchesType=type===""||ev.type===type;
+      const matchesLocation=(ev.location||"").toLowerCase().includes(location);
+      const matchesOrg=(ev.organization||ev.organizer||"").toLowerCase().includes(organization);
+      const priceNum=ev.price==="Free"?0:Number(ev.price);
+      const matchesPrice=priceNum>=minPrice&&priceNum<=maxPrice;
+      const matchesType=type===""||(ev.type===type||ev.ticketType===type);
       const matchesDate=allDates||eventDate===""||ev.date===eventDate;
       return matchesLocation&&matchesOrg&&matchesPrice&&matchesType&&matchesDate;
     });
@@ -186,31 +208,31 @@
 
   document.querySelector('.close-btn').onclick=()=>ticketModal.style.display='none';
   window.onclick=e=>{if(e.target===ticketModal)ticketModal.style.display='none';};
+
   resultsDiv.addEventListener('click',e=>{
     const btn=e.target.closest('button');
     if(!btn)return;
     const name=btn.getAttribute('data-name');
-    const ev=events.find(x=>x.name===name);
+    const ev=events.find(x=>x.name===name||x.title===name);
     if(!ev)return;
-    if(btn.classList.contains('cal-btn'))downloadICS(ev);
+    if(btn.classList.contains('cal-btn')){
+      // Open Calendar Page
+      localStorage.setItem("highlightDate", ev.date);
+      window.location.href = "organizer.html";
+      return;
+    }
     if(btn.classList.contains('claim-btn'))openTicketModal(ev,btn.getAttribute('data-type'));
   });
-// delete published events (organizer only)
-resultsDiv.addEventListener('click', e => {
-  const btn = e.target.closest('.delete-btn');
-  if(!btn || !__auth_isOrganizer) return;
-  const name = btn.getAttribute('data-name');
-  if(!confirm(`Delete event "${name}"?`)) return;
 
-  const key = 'publishedEvents';
-  let list = JSON.parse(localStorage.getItem(key) || '[]');
-  list = list.filter(ev => ev.name !== name);
-  localStorage.setItem(key, JSON.stringify(list));
-
-  // remove from UI
-  btn.closest('.card').remove();
-  alert('Event deleted.');
-});
+  // delete published events (organizer only)
+  resultsDiv.addEventListener('click', e => {
+    const btn = e.target.closest('.delete-btn');
+    if(!btn || !__auth_isOrganizer) return;
+    const name = btn.getAttribute('data-name');
+    if(!confirm(`Delete event "${name}"?`)) return;
+    btn.closest('.card').remove();
+    alert('Event deleted.');
+  });
 </script>
 
 </body>
