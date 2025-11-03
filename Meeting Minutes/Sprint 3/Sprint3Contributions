@@ -6,5 +6,5 @@ Detailed log of each team member's contribution (document)
 • Pawan Kumar Gupta:
 • Zeynep Ozcan:
 • Shadman Chowdhury: I set up a fonctionning qr code generator for when a ticket is bough that brings you to a confirmation page with a unique ticket id. I setup the foundation for a friend search option. I helped with cleaning up the code, resolved merging issues and discussed plans with the team.
-• Gracie Idonije: 
+• Gracie Idonije: I added the admin.html page, updated the navigation on index.html to link to it, implemented the front-end functionality for managing organizations with role assignment and deletion, and ensured the interface displays a message when no organizations are present.
 • Joshua Vilda: 
