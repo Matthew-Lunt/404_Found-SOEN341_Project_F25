@@ -28,6 +28,8 @@
     .b-issued{background:#eef;color:#1b3a8a}
     .b-in{background:#def7e0;color:#236b2a}
     iframe{width:100%;border:0;border-radius:12px;box-shadow:0 6px 14px rgba(20,20,20,.06);background:#fff}
+    .btn.danger{background:#b3261e}
+    .btn.danger:hover{background:#8f1f18}
   </style>
 </head>
 <body>
@@ -43,10 +45,12 @@
       <a href="index.html">Home</a>
       <a href="SearchResults.html">Search</a>
       <a href="CreateEvent.html">Create Event</a>
-      <a class="active" href="organizer.html">Organizer Dashboard</a>
+      <a href="organizer.html" class="active">Organizer Dashboard</a>
+      <span id="authSlot"></span> 
     </nav>
   </div>
 </header>
+<script src="nav.js"></script>
 
 <div class="wrap">
   <h2>Organizer Dashboard</h2>
@@ -67,6 +71,7 @@
       </label>
       <button class="btn" id="clearA">Clear</button>
       <button class="btn" id="csvA">Export Attendees (CSV)</button>
+      <button class="btn danger" id="delA">Delete Event</button>
     </div>
 
     <div class="kpis">
@@ -167,6 +172,32 @@
     evA.innerHTML = `<option value="">— Select an event —</option>${opts}`;
   }
   buildSelect();
+
+  function deleteEventByName(name){
+    const cat = get('eventsCatalog','[]').filter(e=>e.title!==name);
+    const pub = JSON.parse(localStorage.getItem('eventsPublic')||'[]').filter(e=>e.name!==name);
+    const att = get('attendees','[]').filter(a=>a.event!==name);
+    localStorage.setItem('eventsCatalog', JSON.stringify(cat));
+    localStorage.setItem('eventsPublic', JSON.stringify(pub));
+    localStorage.setItem('attendees', JSON.stringify(att));
+  }
+
+  document.getElementById('delA').onclick = ()=>{
+    const name = evA.value;
+    if(!name) return alert('Pick an event first.');
+    if(!confirm(`Delete "${name}" and all its attendees?`)) return;
+    deleteEventByName(name);
+    buildSelect();
+    evA.value = '';
+    document.getElementById('dayA').value='';
+    // reset KPIs + table
+    document.getElementById('kIssued').textContent='0';
+    document.getElementById('kIn').textContent='0';
+    document.getElementById('kRate').textContent='0%';
+    document.getElementById('kLeft').textContent='—';
+    document.querySelector('#tblA tbody').innerHTML = `<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
+    alert('Event deleted.');
+  };
 
   const clearA=document.getElementById('clearA'), csvA=document.getElementById('csvA');
   const kIssued=document.getElementById('kIssued'), kIn=document.getElementById('kIn'), kRate=document.getElementById('kRate'), kLeft=document.getElementById('kLeft');

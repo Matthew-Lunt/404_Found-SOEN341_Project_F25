@@ -137,7 +137,6 @@
             <nav id="nav-container">
                 <a href="index.html">Home</a>
                 <a href="SearchResults.html">Search</a>
-                <a href="CreateEvent.html">Create Event</a>
 
                 <!-- 👇 Add Friend Button and Popup -->
                 <div style="position: relative;">
@@ -148,10 +147,52 @@
                     </div>
                 </div>
 
-                <a href="UserProfile.html" class="active">My Profile</a>
+                <a href="user.html" class="active">My Profile</a>
             </nav>
         </div>
     </header>
+    <script src="nav.js"></script>
+    <script>
+    (function(){
+  const nav = document.getElementById('nav-container');
+  if (!nav) return;
+
+  nav.querySelectorAll('.auth-ui').forEach(el => el.remove());
+  const auth = JSON.parse(localStorage.getItem('auth') || 'null');
+  const span = document.createElement('span');
+  span.className = 'auth-ui';
+  span.style.marginLeft = '12px';
+
+  if (auth) {
+    let extraLink = '';
+    if (auth.role === 'organizer') {
+      extraLink = `<a href="organizer.html" class="btn-secondary" style="margin-left:8px;">Dashboard</a>`;
+    } else if (auth.role === 'user') {
+      extraLink = `<a href="user.html" class="btn-secondary" style="margin-left:8px;">My Profile</a>`;
+    }
+
+    span.innerHTML = `
+      <span style="padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:.9rem;">
+        ${auth.role?.toUpperCase() || 'USER'}
+      </span>
+      ${extraLink}
+      <button id="logoutBtn" class="btn-secondary" style="margin-left:8px;">Logout</button>`;
+  } else {
+    span.innerHTML = `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
+  }
+
+  nav.appendChild(span);
+
+  nav.addEventListener('click', e => {
+    if (e.target.id === 'logoutBtn') {
+      e.preventDefault();
+      localStorage.removeItem('auth');
+      alert('Logged out.');
+      location.href = 'index.html';
+    }
+  });
+})();
+</script>
 
     <section class="section container">
         <h2 class="section-title">My Profile</h2>
