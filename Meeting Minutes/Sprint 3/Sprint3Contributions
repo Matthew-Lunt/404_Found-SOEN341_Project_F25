@@ -5,6 +5,6 @@ Detailed log of each team member's contribution (document)
 • Sophie Hariri: I finalized the Admin Dashboard and Analytics with export functionality and access control, fixed role based login, and completed the story points, risks table, and system block diagram showing the user, organizer, and admin flows.
 • Pawan Kumar Gupta:
 • Zeynep Ozcan:
-• Shadman Chowdhury: 
+• Shadman Chowdhury: I set up a fonctionning qr code generator for when a ticket is bough that brings you to a confirmation page with a unique ticket id. I setup the foundation for a friend search option. I helped with cleaning up the code, resolved merging issues and discussed plans with the team.
 • Gracie Idonije: 
 • Joshua Vilda: 
