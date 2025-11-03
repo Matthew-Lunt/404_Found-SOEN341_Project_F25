@@ -1,0 +1,10 @@
+# Ignore Node.js folders and dependencies
+node_modules
+
+# Ignore Firebase keys
+firebaseServiceAccount.json
+
+# Ignore VS Code settings and system files
+.vscode/
+.DS_Store
+Thumbs.db
