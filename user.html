@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="css/homepage.css">
+    <style>
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #912338;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .btn-primary:hover {
+                background-color: #a23445;
+            }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+            nav a {
+                padding: 0.6rem 1.2rem;
+                border-radius: 8px;
+                text-decoration: none;
+                color: black;
+            }
+
+                nav a.active {
+                    background-color: #912338;
+                    color: white;
+                }
+
+        .calendar-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+            .calendar-header h3 {
+                margin: 0;
+            }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+
+        .calendar-day-name {
+            font-weight: bold;
+            background-color: #f0f0f0;
+            padding: 10px 0;
+            border-radius: 6px;
+        }
+
+        .calendar-day {
+            height: 80px;
+            padding: 8px;
+            background-color: #fafafa;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            cursor: default;
+        }
+
+            .calendar-day:hover {
+                background-color: #e7f0ff;
+            }
+
+        .empty-day {
+            background-color: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        /* --- Friend Search Dropdown --- */
+        #friend-search-container {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            margin-top: 5px;
+            z-index: 10;
+        }
+
+        #friend-search {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container header-content">
+            <h1 class="logo">404TicketsFound</h1>
+            <nav id="nav-container">
+                <a href="index.html">Home</a>
+                <a href="SearchResults.html">Search</a>
+                <a href="CreateEvent.html">Create Event</a>
+
+                <!-- 👇 Add Friend Button and Popup -->
+                <div style="position: relative;">
+                    <button id="add-friend-btn" class="btn-primary">Add Friend</button>
+                    <div id="friend-search-container">
+                        <input type="text" id="friend-search" placeholder="Search for a friend...">
+                        <button id="friend-search-btn" class="btn-primary" style="margin-left:5px;">Search</button>
+                    </div>
+                </div>
+
+                <a href="UserProfile.html" class="active">My Profile</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section container">
+        <h2 class="section-title">My Profile</h2>
+        <div class="card">
+            <h3 id="user-name">John Doe</h3>
+            <p id="user-email">johndoe@email.com</p>
+            <button class="btn-primary" id="edit-profile-btn">Edit Profile</button>
+        </div>
+    </section>
+
+    <section class="section container">
+        <h2 class="section-title">Upcoming Events</h2>
+
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonth" class="btn-primary">←</button>
+                <h3 id="monthYear"></h3>
+                <button id="nextMonth" class="btn-primary">→</button>
+            </div>
+            <div class="calendar-grid" id="calendar"></div>
+        </div>
+    </section>
+
+    <section class="section container">
+        <h2 class="section-title">Past Events</h2>
+        <div id="past-events" class="events-grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- Calendar Functionality ---
+        const calendar = document.getElementById('calendar');
+        const monthYear = document.getElementById('monthYear');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        let currentDate = new Date();
+
+        function renderCalendar(date) {
+            calendar.innerHTML = '';
+
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            monthYear.textContent = `${monthNames[month]} ${year}`;
+
+            const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            dayNames.forEach(day => {
+                const div = document.createElement('div');
+                div.classList.add('calendar-day-name');
+                div.textContent = day;
+                calendar.appendChild(div);
+            });
+
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.classList.add('calendar-day', 'empty-day');
+                calendar.appendChild(empty);
+            }
+
+            // Days of month
+            for (let day = 1; day <= lastDate; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('calendar-day');
+                dayDiv.textContent = day;
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+        });
+
+        renderCalendar(currentDate);
+
+        // --- Add Friend Functionality ---
+        const addFriendBtn = document.getElementById('add-friend-btn');
+        const friendSearchContainer = document.getElementById('friend-search-container');
+        const friendSearchInput = document.getElementById('friend-search');
+        const friendSearchBtn = document.getElementById('friend-search-btn');
+
+        addFriendBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            friendSearchContainer.style.display = 'block';
+            friendSearchInput.focus();
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!friendSearchContainer.contains(event.target) && event.target !== addFriendBtn) {
+                friendSearchContainer.style.display = 'none';
+            }
+        });
+
+        friendSearchBtn.addEventListener('click', () => {
+            const userfriendnamesearch = friendSearchInput.value.trim();
+            if (userfriendnamesearch) {
+                localStorage.setItem('userfriendnamesearch', userfriendnamesearch);
+                alert(`Friend search saved: ${userfriendnamesearch}`);
+                friendSearchContainer.style.display = 'none';
+                friendSearchInput.value = '';
+            } else {
+                alert('Please enter a name to search.');
+            }
+        });
+    </script>
+</body>
+</html>
