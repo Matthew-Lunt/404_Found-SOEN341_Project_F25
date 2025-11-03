@@ -9,6 +9,19 @@
 </head>
 
 <body>
+  <script>
+    (function () {
+      try {
+        const a = JSON.parse(localStorage.getItem('auth') || 'null');
+        if (!a || a.role !== 'organizer') {
+          // not an organizer → send to login
+          location.href = '404NotFoundLogin.html?reason=organizer_only';
+        }
+      } catch (e) {
+        location.href = '404NotFoundLogin.html?reason=organizer_only';
+      }
+    })();
+  </script>
   <header>
     <div class="container header-content">
       <h1 class="logo">404TicketsFound</h1>

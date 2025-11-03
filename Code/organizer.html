@@ -91,6 +91,19 @@
 </head>
 
 <body>
+  <script>
+    (function () {
+      try {
+        const a = JSON.parse(localStorage.getItem('auth') || 'null');
+        if (!a || a.role !== 'organizer') {
+          // not an organizer → send to login
+          location.href = '404NotFoundLogin.html?reason=organizer_only';
+        }
+      } catch (e) {
+        location.href = '404NotFoundLogin.html?reason=organizer_only';
+      }
+    })();
+  </script>
 <header>
     <div class="container header-content">
         <h1 class="logo">404TicketsFound</h1>
@@ -98,7 +111,7 @@
             <a href="index.html">Home</a>
             <a href="SearchResults.html">Search</a>
             <a href="CreateEvent.html">Create Event</a>
-            <a href="OrganizerProfile.html" class="active">Organizer Profile</a>
+            <a href="organizer.html" class="active">Organizer Profile</a>
         </nav>
     </div>
 </header>
