@@ -6,16 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Analytics - 404TicketsFound</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/homepage.css">
     <link rel="stylesheet" href="css/administratorAnalytics.css">
 </head>
+<style>
+    /* line between big sections */
+    .container > * + * {
+      border-top: 1.5px solid #222020;
+      margin-top: 25px;
+      padding-top: 20px;
+    }
+    /* space around section titles */
+    h2, h3 {
+        margin-top: 27px;
+        margin-bottom: 10px;
+        letter-spacing: 0.3px;
+    }
+    h3 {
+    font-size: 1.3rem;
+    color: #333;
+     }
 
+  </style>
 <body>
     <header>
         <div class="header-content">
             <h1 class="logo">404TicketsFound</h1>
             <nav>
                 <a href="index.html">Home</a>
-                <a href="AnalyticsDashboard.html">Dashboard</a>
+                <a href="AdminManagement.html">Dashboard</a>
                 <a href="#" class="active">Admin Analytics</a>
             </nav>
         </div>
@@ -58,7 +77,7 @@
                     <h4>Tickets Issued</h4>
                     <div class="stat-icon icon-tickets">🎫</div>
                 </div>
-                <div class="stat-value" id="totalTickets">45,892</div>
+                <div class="stat-value" id="totalTickets">45 892</div>
                 <div class="stat-change positive">
                     ↑ 18% from last period
                 </div>
@@ -80,7 +99,7 @@
                     <h4>Active Users</h4>
                     <div class="stat-icon icon-users">👥</div>
                 </div>
-                <div class="stat-value" id="activeUsers">12,456</div>
+                <div class="stat-value" id="activeUsers">12 456</div>
                 <div class="stat-change positive">
                     ↑ 8% from last period
                 </div>
@@ -187,16 +206,16 @@
                     <tr>
                         <td>Summer Music Festival 2025</td>
                         <td>Music Live Productions</td>
-                        <td>4,850</td>
-                        <td>$97,000</td>
+                        <td>4850</td>
+                        <td>$97000</td>
                         <td>97%</td>
                         <td><span class="trend-indicator trend-up">↑ Trending</span></td>
                     </tr>
                     <tr>
                         <td>Tech Summit Montreal</td>
                         <td>Tech Events Inc</td>
-                        <td>1,980</td>
-                        <td>$79,200</td>
+                        <td>1980</td>
+                        <td>$79200</td>
                         <td>99%</td>
                         <td><span class="trend-indicator trend-up">↑ Trending</span></td>
                     </tr>
@@ -211,8 +230,8 @@
                     <tr>
                         <td>Food & Wine Expo</td>
                         <td>Elite Events Inc</td>
-                        <td>2,450</td>
-                        <td>$61,250</td>
+                        <td>2450</td>
+                        <td>$61250</td>
                         <td>82%</td>
                         <td><span class="trend-indicator trend-down">↓ Declining</span></td>
                     </tr>
@@ -220,7 +239,7 @@
                         <td>Comedy Night Special</td>
                         <td>Entertainment Hub</td>
                         <td>890</td>
-                        <td>$26,700</td>
+                        <td>$26700</td>
                         <td>95%</td>
                         <td><span class="trend-indicator trend-up">↑ Trending</span></td>
                     </tr>
@@ -251,30 +270,30 @@
                     </tr>
                     <tr>
                         <td>Ticket Purchase</td>
-                        <td>45,892</td>
-                        <td>12,456</td>
-                        <td>1,529</td>
+                        <td>45892</td>
+                        <td>12456</td>
+                        <td>1529</td>
                         <td><span class="trend-indicator trend-up">+18%</span></td>
                     </tr>
                     <tr>
                         <td>Event Search</td>
-                        <td>89,234</td>
-                        <td>15,678</td>
-                        <td>2,974</td>
+                        <td>89234</td>
+                        <td>15678</td>
+                        <td>2974</td>
                         <td><span class="trend-indicator trend-up">+25%</span></td>
                     </tr>
                     <tr>
                         <td>Dashboard Views</td>
-                        <td>5,623</td>
+                        <td>5623</td>
                         <td>892</td>
                         <td>187</td>
                         <td><span class="trend-indicator trend-up">+8%</span></td>
                     </tr>
                     <tr>
                         <td>Email Notifications</td>
-                        <td>123,456</td>
-                        <td>18,234</td>
-                        <td>4,115</td>
+                        <td>123456</td>
+                        <td>18234</td>
+                        <td>4115</td>
                         <td><span class="trend-indicator trend-stable">+2%</span></td>
                     </tr>
                 </tbody>
@@ -291,7 +310,7 @@
                 </div>
                 <div class="activity-item">
                     <div class="activity-time">15 minutes ago</div>
-                    <div class="activity-description">1,247 tickets sold for "Rock Concert Series"</div>
+                    <div class="activity-description">1247 tickets sold for "Rock Concert Series"</div>
                 </div>
                 <div class="activity-item">
                     <div class="activity-time">1 hour ago</div>
@@ -303,7 +322,7 @@
                 </div>
                 <div class="activity-item">
                     <div class="activity-time">5 hours ago</div>
-                    <div class="activity-description">Peak usage detected: 5,234 concurrent users</div>
+                    <div class="activity-description">Peak usage detected: 5234 concurrent users</div>
                 </div>
             </div>
         </div>
@@ -325,6 +344,17 @@
     </footer>
 
     <script>
+        //admin only
+                (function () {
+            try {
+            const a = JSON.parse(localStorage.getItem('auth') || 'null');
+            if (!a || a.role !== 'admin') {
+                location.href = '404NotFoundLogin.html';
+            }
+            } catch (e) {
+            location.href = '404NotFoundLogin.html';
+            }
+        })();
         // Initialize charts
         const ticketSalesChart = new Chart(document.getElementById('ticketSalesChart'), {
             type: 'line',
@@ -521,16 +551,84 @@
             alert(`Generating comprehensive report for the last ${timeRange} days...\nReport will be available in the Export section.`);
         }
 
-        function exportPDF() {
-            alert('Exporting analytics as PDF...\nYour download will begin shortly.');
+        function _text(id){ const el=document.getElementById(id); return el?el.textContent.trim():''; }
+        function _tableToRows(tbl){
+        const rows=[], head=[...tbl.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+        if(head.length) rows.push(head);
+        [...tbl.querySelectorAll('tbody tr')].forEach(tr=>rows.push([...tr.children].map(td=>td.textContent.trim())));
+        return rows;
+        }
+        function _download(name, mime, content){
+        const blob=new Blob([content],{type:mime}), a=document.createElement('a');
+        a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },0);
+        }
+        async function exportPDF(){
+        const { jsPDF } = window.jspdf;
+        const area=document.querySelector('.container')||document.body;
+        const canvas=await html2canvas(area,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+        const img=canvas.toDataURL('image/png');
+
+        const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+        const pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight();
+        const margin=10, imgW=pageW-2*margin, imgH=(canvas.height*imgW)/canvas.width;
+
+        if(imgH<=pageH-2*margin){
+            pdf.addImage(img,'PNG',margin,margin,imgW,imgH,'','FAST');
+        }else{
+            // multi-page slice
+            const sliceHpx=Math.floor((canvas.width*(pageH-2*margin))/imgW);
+            let y=0; const tmp=document.createElement('canvas'), ctx=tmp.getContext('2d');
+            while(y<canvas.height){
+            const h=Math.min(sliceHpx,canvas.height-y);
+            tmp.width=canvas.width; tmp.height=h;
+            ctx.clearRect(0,0,tmp.width,tmp.height);
+            ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
+            if(y>0) pdf.addPage();
+            pdf.addImage(tmp.toDataURL('image/png'),'PNG',margin,margin,imgW,(h*imgW)/canvas.width,'','FAST');
+            y+=h;
+            }
+        }
+        pdf.save('global_analytics.pdf');
         }
 
         function exportCSV() {
-            alert('Exporting analytics as CSV...\nYour download will begin shortly.');
+            const out=[];
+        out.push('Section,Metric,Value');
+        out.push(`KPIs,Total Events,${_text('totalEvents')}`);
+        out.push(`KPIs,Tickets Issued,${_text('totalTickets')}`);
+        out.push(`KPIs,Total Revenue,${_text('totalRevenue')}`);
+        out.push(`KPIs,Active Users,${_text('activeUsers')}`);
+        out.push('');
+
+        const tables=document.querySelectorAll('.table-card table');
+        if(tables[0]){
+            out.push('Top Performing Events');
+            _tableToRows(tables[0]).forEach(r=>out.push(r.map(v=>/[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',')));
+            out.push('');
+        }
+        if(tables[1]){
+            out.push('Feature Usage Analytics');
+            _tableToRows(tables[1]).forEach(r=>out.push(r.map(v=>/[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',')));
+        }
+        _download('global_analytics.csv','text/csv;charset=utf-8',out.join('\n'));
         }
 
-        function exportExcel() {
-            alert('Exporting analytics as Excel...\nYour download will begin shortly.');
+
+        function exportExcel(){
+        const wb=XLSX.utils.book_new();
+        const kpis=[['Metric','Value'],
+            ['Total Events',_text('totalEvents')],
+            ['Tickets Issued',_text('totalTickets')],
+            ['Total Revenue',_text('totalRevenue')],
+            ['Active Users',_text('activeUsers')]];
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(kpis),'KPIs');
+
+        const tables=document.querySelectorAll('.table-card table');
+        if(tables[0]) XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(_tableToRows(tables[0])),'Top Events');
+        if(tables[1]) XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(_tableToRows(tables[1])),'Feature Usage');
+
+        XLSX.writeFile(wb,'global_analytics.xlsx');
         }
 
         // Set default dates
@@ -566,6 +664,9 @@
             }
         }, 30000);
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </body>
 
 </html>

@@ -98,6 +98,94 @@
 </style>
 </head>
 <body>
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+
+    <form id="login-form">
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
+      <select id="login-role" style="margin-top:8px;">
+        <option value="user">User Account</option>
+        <option value="organizer">Organizer Account</option>
+        <option value="admin">Admin Account</option>
+      </select>
+      <button type="submit">Login</button>
+    </form>
+
+    <form id="signup-form" style="display: none;">
+      <!-- 🔘 Account Type Toggle -->
+      <div id="type-account">
+        <div class="toggle-option active" data-type="user">User Account</div>
+        <div class="toggle-option" data-type="organizer">Organizer Account</div>
+      </div>
+
+      <input type="text" placeholder="Full Name" required>
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <p class="toggle-link" id="toggle-form">Don’t have an account? Sign Up</p>
+
+    <!-- 🡠 Go Back Button -->
+    <a href="index.html" class="back-btn">← Go Back</a>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const toggleText = document.getElementById("toggle-form");
+    const title = document.getElementById("form-title");
+
+    // Switch between Login and Signup forms
+    toggleText.addEventListener("click", () => {
+      if (loginForm.style.display === "none") {
+        loginForm.style.display = "flex";
+        signupForm.style.display = "none";
+        title.textContent = "Login";
+        toggleText.textContent = "Don’t have an account? Sign Up";
+      } else {
+        loginForm.style.display = "none";
+        signupForm.style.display = "flex";
+        title.textContent = "Sign Up";
+        toggleText.textContent = "Already have an account? Login";
+      }
+    });
+
+    // Demo login handling
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const role = (document.getElementById('login-role')||{value:'user'}).value;
+      const email = loginForm.querySelector('input[type="email"]').value.trim();
+      try { localStorage.setItem('auth', JSON.stringify({ role, email })); } catch(e) {}
+      if (role === 'admin') {
+        location.href = 'AdminManagement.html'; 
+      } else if (role === 'organizer') {
+        location.href = 'organizer.html';
+      } else {
+        location.href = 'user.html';
+      }
+    });
+
+    // Signup handling + account type
+    const toggleWrapper = document.getElementById("type-account");
+    const options = toggleWrapper.querySelectorAll(".toggle-option");
+    let accountType = "user"; // Default
+
+    options.forEach(option => {
+      option.addEventListener("click", () => {
+        options.forEach(opt => opt.classList.remove("active"));
+        option.classList.add("active");
+        accountType = option.dataset.type;
+        console.log("Selected account type:", accountType);
+      });
+    });
+
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      alert(`Account created as ${accountType.toUpperCase()} (demo only)`);
+    });
+  </script>
 <div class="container">
   <h2 id="form-title">Login</h2>
 
