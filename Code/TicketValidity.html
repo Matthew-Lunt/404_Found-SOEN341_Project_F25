@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket Validity Checker</title>
+    <link rel="stylesheet" href="css/homepage.css" />
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        h2.section-title {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .btn-primary {
+            background-color: #721c24;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background-color: #721c24;
+        }
+
+        /* --- Ticket Checker --- */
+        .ticket-checker {
+            text-align: center;
+        }
+
+        .ticket-checker input {
+            padding: 0.7rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 1rem;
+        }
+
+        .scanner-container {
+            display: none;
+            margin: 1rem auto;
+            width: 320px;
+            max-width: 100%;
+        }
+
+        .result-card {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .valid {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .invalid {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+<script>
+</script>
+
+<header>
+    <div class="container header-content">
+        <h1 class="logo">404TicketsFound</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="SearchResults.html">Search</a>
+            <a href="CreateEvent.html">Create Event</a>
+            <a href="organizer.html">Organizer Profile</a>
+        </nav>
+    </div>
+</header>
+
+<section class="section container">
+    <h2 class="section-title">Event Ticket Validity Checker</h2>
+
+    <div class="card ticket-checker">
+        <p>Enter a ticket code manually or scan a QR code to verify its validity.</p>
+
+        <input type="text" id="ticketCode" placeholder="Enter Ticket Code" />
+        <br />
+        <button class="btn-primary" id="checkBtn">Check Ticket</button>
+        <button class="btn-primary" id="scanBtn" style="margin-left: 10px;">Scan QR Code</button>
+
+        <div id="scanner" class="scanner-container"></div>
+        <div id="result" class="result-card"></div>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+</footer>
+
+<script>
+    const resultBox = document.getElementById("result");
+    const scannerContainer = document.getElementById("scanner");
+    const scanBtn = document.getElementById("scanBtn");
+
+    let html5QrCode;
+    let scanning = false;
+
+    async function validateTicket(code) {
+        if (!code) {
+            resultBox.style.display = "block";
+            resultBox.className = "result-card invalid";
+            resultBox.textContent = "⚠️ Please enter or scan a ticket code.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/tickets/validate/${code}`);
+            const data = await response.json();
+
+            resultBox.style.display = "block";
+
+            if (data.valid) {
+                resultBox.className = "result-card valid";
+                resultBox.innerHTML = `
+            Ticket is VALID<br>
+            <strong>Event:</strong> ${data.eventName}<br>
+            <strong>Holder:</strong> ${data.holderName}<br>
+            <strong>Date:</strong> ${data.eventDate}
+          `;
+            } else {
+                resultBox.className = "result-card invalid";
+                resultBox.innerHTML = ` Invalid Ticket Code<br>Ticket not found or already used.`;
+            }
+        } catch (error) {
+            console.error("Validation error:", error);
+            resultBox.style.display = "block";
+            resultBox.className = "result-card invalid";
+            resultBox.textContent = " Error connecting to server. Try again later.";
+        }
+    }
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+        const code = document.getElementById("ticketCode").value.trim();
+        validateTicket(code);
+    });
+
+    scanBtn.addEventListener("click", () => {
+        if (!scanning) {
+            startScanner();
+        } else {
+            stopScanner();
+        }
+    });
+
+    async function startScanner() {
+        scannerContainer.style.display = "block";
+        scanBtn.textContent = "Stop Scanning";
+        scanning = true;
+
+        html5QrCode = new Html5Qrcode("scanner");
+        const config = { fps: 10, qrbox: 250 };
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                document.getElementById("ticketCode").value = decodedText;
+                stopScanner();
+                validateTicket(decodedText);
+            },
+            (errorMessage) => {
+                console.log("QR scan error:", errorMessage);
+            }
+        );
+    }
+
+    async function stopScanner() {
+        if (html5QrCode) {
+            await html5QrCode.stop();
+            html5QrCode.clear();
+        }
+        scannerContainer.style.display = "none";
+        scanBtn.textContent = "Scan QR Code";
+        scanning = false;
+    }
+</script>
+</body>
+</html>
