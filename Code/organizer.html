@@ -1,279 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Profile</title>
-    <link rel="stylesheet" href="css/homepage.css">
-    <style>
-        /* --- General Styles --- */
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.2rem;
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-primary {
-            background-color: #007BFF;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        /* --- Calendar Styles --- */
-        .calendar-container {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .calendar-header h3 {
-            margin: 0;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            text-align: center;
-        }
-
-        .calendar-day-name {
-            font-weight: bold;
-            background-color: #f0f0f0;
-            padding: 10px 0;
-            border-radius: 6px;
-        }
-
-        .calendar-day {
-            height: 80px;
-            padding: 8px;
-            background-color: #fafafa;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            cursor: default;
-        }
-
-        .calendar-day:hover {
-            background-color: #e7f0ff;
-        }
-
-        .empty-day {
-            background-color: transparent;
-            border: none;
-            cursor: default;
-        }
-    </style>
+  <meta charset="utf-8"/>
+  <title>Organizer Dashboard – 404TicketsFound</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/homepage.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{background:#f7f8fb}
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{border:1px solid #ddd;border-radius:10px;padding:10px 14px;background:#fff;cursor:pointer}
+    .tab.active{background:#7a2b3d;color:#fff;border-color:#7a2b3d}
+    .panel{margin-top:16px}
+    .hidden{display:none}
+    .bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:10px 0 18px}
+    select,input{padding:9px;border:1px solid #ddd;border-radius:10px;background:#fff}
+    .btn{background:#7a2b3d;color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer}
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+    .k{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 14px rgba(20,20,20,.06);text-align:center}
+    .k h4{margin:0;color:#7a2b3d;font-size:.95rem}
+    .k p{margin:6px 0 0;font-size:1.4rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px}
+    .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 6px 14px rgba(20,20,20,.06)}
+    .table{overflow:auto;max-height:420px;border:1px solid #eee;border-radius:10px;margin-top:10px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    .badge{padding:2px 8px;border-radius:999px;font-weight:600;font-size:12px}
+    .b-issued{background:#eef;color:#1b3a8a}
+    .b-in{background:#def7e0;color:#236b2a}
+    iframe{width:100%;border:0;border-radius:12px;box-shadow:0 6px 14px rgba(20,20,20,.06);background:#fff}
+  </style>
 </head>
-
 <body>
-  <script>
-    (function () {
-      try {
-        const a = JSON.parse(localStorage.getItem('auth') || 'null');
-        if (!a || a.role !== 'organizer') {
-          // not an organizer → send to login
-          location.href = '404NotFoundLogin.html?reason=organizer_only';
-        }
-      } catch (e) {
-        location.href = '404NotFoundLogin.html?reason=organizer_only';
-      }
-    })();
-  </script>
-<header>
-    <div class="container header-content">
-        <h1 class="logo">404TicketsFound</h1>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="SearchResults.html">Search</a>
-            <a href="CreateEvent.html">Create Event</a>
-            <a href="organizer.html" class="active">Organizer Profile</a>
-        </nav>
-    </div>
-</header>
-
-<section class="section container">
-    <h2 class="section-title">Organizer Profile</h2>
-    <div class="card">
-        <h3 id="organizer-name">Eventify Productions</h3>
-        <p id="organizer-email">contact@eventify.com</p>
-        <p id="organizer-bio">Specializing in concerts, festivals, and tech conferences across Canada.</p>
-        <button class="btn-primary" id="edit-profile-btn">Edit Profile</button>
-        <button class="btn-primary" id="create-event-btn" style="margin-left:10px;">Create New Event</button>
-    </div>
-</section>
-
-<section class="section container">
-    <h2 class="section-title">Event Calendar</h2>
-
-    <!-- ===== CALENDAR START ===== -->
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <button id="prevMonth" class="btn-primary">←</button>
-            <h3 id="monthYear"></h3>
-            <button id="nextMonth" class="btn-primary">→</button>
-        </div>
-        <div class="calendar-grid" id="calendar"></div>
-    </div>
-    <!-- ===== CALENDAR END ===== -->
-</section>
-
-<section class="section container">
-    <h2 class="section-title">Past Hosted Events</h2>
-    <div id="past-events" class="events-grid"></div>
-</section>
-
-<footer>
-    <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
-</footer>
-
 <script>
-  // ==== CALENDAR SCRIPT ====
-  const calendar = document.getElementById('calendar');
-  const monthYear = document.getElementById('monthYear');
-  const prevMonthBtn = document.getElementById('prevMonth');
-  const nextMonthBtn = document.getElementById('nextMonth');
-
-  let currentDate = new Date();
-
-  function renderCalendar(date) {
-    calendar.innerHTML = '';
-
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
-
-    const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-
-    monthYear.textContent = `${monthNames[month]} ${year}`;
-
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    dayNames.forEach(day => {
-      const div = document.createElement('div');
-      div.classList.add('calendar-day-name');
-      div.textContent = day;
-      calendar.appendChild(div);
-    });
-
-    // Empty slots before first day
-    for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement('div');
-      empty.classList.add('calendar-day', 'empty-day');
-      calendar.appendChild(empty);
-    }
-
-    // Days of the month
-    for (let day = 1; day <= lastDate; day++) {
-      const dayDiv = document.createElement('div');
-      dayDiv.classList.add('calendar-day');
-      dayDiv.textContent = day;
-      calendar.appendChild(dayDiv);
-    }
-  }
-
-  // Loads events from backend
-  async function loadEvents() {
-    try {
-      const response = await fetch("http://localhost:5000/api/events");
-      const events = await response.json();
-      console.log(" Events loaded:", events);
-
-      highlightEvents(events);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    }
-  }
-
-  // Marks days that have events
-  function highlightEvents(events) {
-    const calendarDays = document.querySelectorAll(".calendar-day");
-
-    events.forEach(event => {
-
-      const [year, month, day] = event.date.split("-").map(Number);
-
-      // current displayed month/year
-      if (
-        month - 1 === currentDate.getMonth() &&
-        year === currentDate.getFullYear()
-      ) {
-        calendarDays.forEach(dayDiv => {
-          if (
-            !dayDiv.classList.contains("empty-day") &&
-            parseInt(dayDiv.textContent) === day
-          ) {
-            const marker = document.createElement("div");
-            marker.textContent = event.title;
-            marker.style.backgroundColor = "#007bff";
-            marker.style.color = "white";
-            marker.style.fontSize = "12px";
-            marker.style.borderRadius = "4px";
-            marker.style.padding = "2px";
-            marker.style.marginTop = "5px";
-            marker.style.overflow = "hidden";
-            marker.style.textOverflow = "ellipsis";
-            marker.style.whiteSpace = "nowrap";
-
-            dayDiv.appendChild(marker);
-          }
-        });
-      }
-    });
-  }
-
-  // Move to previous month
-  prevMonthBtn.addEventListener("click", () => {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar(currentDate);
-    loadEvents();
-  });
-
-  // Move to next month
-  nextMonthBtn.addEventListener("click", () => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar(currentDate);
-    loadEvents();
-  });
-
-  // Initial page setup
-  renderCalendar(currentDate);
-  loadEvents();
-
-  // "Create New Event" button
-  document.getElementById("create-event-btn").addEventListener("click", () => {
-    window.location.href = "CreateEvent.html";
-  });
+  const auth = JSON.parse(localStorage.getItem('auth')||'null');
+  if(!auth || auth.role!=='organizer') location.href='404NotFoundLogin.html?reason=organizer_only';
 </script>
 
-</body>
+<header>
+  <div class="container header-content">
+    <h1 class="logo">404TicketsFound</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="SearchResults.html">Search</a>
+      <a href="CreateEvent.html">Create Event</a>
+      <a class="active" href="organizer.html">Organizer Dashboard</a>
+    </nav>
+  </div>
+</header>
 
+<div class="wrap">
+  <h2>Organizer Dashboard</h2>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="analytics">Event Analytics</button>
+    <button class="tab" data-tab="checker">Ticket Validity</button>
+  </div>
+
+  <!-- ANALYTICS -->
+  <section id="analytics" class="panel">
+    <div class="bar">
+      <label>Event
+        <select id="evA"></select>
+      </label>
+      <label>Date
+        <input type="date" id="dayA"/>
+      </label>
+      <button class="btn" id="clearA">Clear</button>
+      <button class="btn" id="csvA">Export Attendees (CSV)</button>
+    </div>
+
+    <div class="kpis">
+      <div class="k"><h4>Tickets Issued</h4><p id="kIssued">0</p></div>
+      <div class="k"><h4>Checked In</h4><p id="kIn">0</p></div>
+      <div class="k"><h4>Attendance Rate</h4><p id="kRate">0%</p></div>
+      <div class="k"><h4>Remaining Capacity</h4><p id="kLeft">—</p></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 8px">Ticketing Over Time</h3>
+        <canvas id="c1" height="160"></canvas>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px">Check-ins Over Time</h3>
+        <canvas id="c2" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin:0 0 8px">Attendees</h3>
+      <div class="table">
+        <table id="tblA">
+          <thead><tr><th>Code</th><th>Event</th><th>Status</th><th>Issued</th><th>Checked In</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKER (embed your existing page) -->
+  <section id="checker" class="panel hidden">
+    <div class="bar" style="justify-content:space-between;align-items:center">
+      <div><strong>Ticket Validity</strong> (embedded)</div>
+      <a class="btn" href="TicketValidity.html" target="_blank" rel="noopener">Open Full Page</a>
+    </div>
+    <iframe id="checkerFrame" src="TicketValidity.html" title="Ticket Validity"></iframe>
+  </section>
+</div>
+
+<footer><p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound</p></footer>
+
+<script>
+  // tabs
+  document.querySelector('.tabs').addEventListener('click', e=>{
+    if(!e.target.matches('.tab')) return;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    e.target.classList.add('active');
+    const id=e.target.dataset.tab;
+    document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    if(id==='analytics') renderAnalytics();
+    if(id==='checker') resizeFrame();
+  });
+
+  // resize iframe to its content (same-origin)
+  const frame=document.getElementById('checkerFrame');
+  function resizeFrame(){
+    try{
+      const h = frame.contentDocument?.body?.scrollHeight || 900;
+      frame.style.height = Math.max(h, 900)+'px';
+    }catch(_){ frame.style.height='900px' }
+  }
+  frame.addEventListener('load', resizeFrame);
+
+  // data helpers
+  const get=(k,f='[]')=>JSON.parse(localStorage.getItem(k)||f);
+  const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  if(!localStorage.getItem('eventsCatalog')) set('eventsCatalog',[]);
+  if(!localStorage.getItem('attendees')) set('attendees',[]);
+
+  // build event select
+  const evA=document.getElementById('evA'), dayA=document.getElementById('dayA');
+  function eventsList(){
+    const cat=get('eventsCatalog','[]');
+    const att=get('attendees','[]');
+    const map=new Map(cat.map(e=>[e.title,e]));
+    att.forEach(a=>{ if(!map.has(a.event)) map.set(a.event,{title:a.event,date:a.eventDate||'',capacity:null}); });
+    return [...map.values()].sort((a,b)=>a.title.localeCompare(b.title));
+  }
+  function buildSelect(){
+    const opts=eventsList().map(e=>`<option value="${e.title}">${e.title}</option>`).join('');
+    evA.innerHTML = `<option value="">— Select an event —</option>${opts}`;
+  }
+  buildSelect();
+
+  // analytics
+  const clearA=document.getElementById('clearA'), csvA=document.getElementById('csvA');
+  const kIssued=document.getElementById('kIssued');
+  const kIn=document.getElementById('kIn');
+  const kRate=document.getElementById('kRate');
+  const kLeft=document.getElementById('kLeft');
+  const tbodyA=document.querySelector('#tblA tbody');
+  let chart1, chart2;
+  function capOf(name){ const e=get('eventsCatalog','[]').find(x=>x.title===name); return e?.capacity??null }
+  function fmt(t){ if(!t) return ''; const d=new Date(t); return d.toLocaleString() }
+  function destroyCharts(){ chart1?.destroy(); chart2?.destroy(); chart1=chart2=null }
+
+  function renderAnalytics(){
+    const name=evA.value;
+    if(!name){ tbodyA.innerHTML=''; kIssued.textContent='0'; kIn.textContent='0'; kRate.textContent='0%'; kLeft.textContent='—'; destroyCharts(); return }
+    const all=get('attendees','[]').filter(a=>a.event===name);
+    const f=dayA.value? all.filter(a=>(a.eventDate||'').startsWith(dayA.value)) : all;
+
+    const issued=f.length, checked=f.filter(a=>a.status==='checked_in').length;
+    kIssued.textContent=issued; kIn.textContent=checked;
+    kRate.textContent= issued? Math.round(100*checked/issued)+'%' : '0%';
+    kLeft.textContent= capOf(name)!=null ? Math.max(capOf(name)-issued,0) : '—';
+
+    tbodyA.innerHTML = f.map(a=>`
+      <tr>
+        <td style="font-family:ui-monospace,monospace">${a.code}</td>
+        <td>${a.event}</td>
+        <td>${a.status==='checked_in'
+              ? '<span class="badge b-in">Checked-in</span>'
+              : '<span class="badge b-issued">Issued</span>'}</td>
+        <td>${fmt(a.tsIssued)}</td>
+        <td>${fmt(a.tsCheckedIn)}</td>
+      </tr>`).join('') || `<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
+
+    const buckets=(list,key)=>list.reduce((m,a)=>{const t=a[key]; if(!t) return m; const d=new Date(t).toISOString().slice(0,10); m[d]=(m[d]||0)+1; return m},{});
+    const bI=buckets(f,'tsIssued'), bC=buckets(f.filter(x=>x.status==='checked_in'),'tsCheckedIn');
+    const lab1=Object.keys(bI).sort(), dat1=lab1.map(k=>bI[k]);
+    const lab2=Object.keys(bC).sort(), dat2=lab2.map(k=>bC[k]);
+
+    destroyCharts();
+    chart1=new Chart(document.getElementById('c1'),{type:'line',data:{labels:lab1,datasets:[{label:'Issued',data:dat1,tension:.3,fill:true}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+    chart2=new Chart(document.getElementById('c2'),{type:'line',data:{labels:lab2,datasets:[{label:'Checked-in',data:dat2,tension:.3,fill:true}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  }
+  evA.onchange=renderAnalytics; dayA.onchange=renderAnalytics; clearA.onclick=()=>{dayA.value=''; renderAnalytics()};
+  csvA.onclick=()=>{
+    const name=evA.value; if(!name) return alert('Pick an event first.');
+    const rows=[['Event','Code','Status','Issued At','Checked In At','Event Date','Capacity']];
+    const list=get('attendees','[]').filter(a=>a.event===name && (!dayA.value || (a.eventDate||'').startsWith(dayA.value)));
+    list.forEach(a=>rows.push([a.event,a.code,a.status,fmt(a.tsIssued),fmt(a.tsCheckedIn),a.eventDate||'',capOf(a.event)??'']));
+    const csv=rows.map(r=>r.map(v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v)).join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=(name.replace(/\s+/g,'_'))+'_attendees.csv'; a.click(); URL.revokeObjectURL(url);
+  };
+
+  // preselect via ?event=...
+  (function(){
+    const p=new URLSearchParams(location.search); const ev=p.get('event');
+    if(ev){ const id=setInterval(()=>{ if(evA.options.length){ evA.value=ev; clearInterval(id); renderAnalytics(); }},40); }
+  })();
+</script>
+</body>
 </html>
