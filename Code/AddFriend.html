@@ -6,7 +6,21 @@
   <title>Find Friends — 404TicketsFound</title>
   <link rel="stylesheet" href="css/homepage.css">
   <script src="JS/nav.js" defer></script>
+
+  <style>
+    .friend-card-listed {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff;
+      margin-bottom: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
+
 <body>
 <header>
   <div class="container header-content">
@@ -20,20 +34,25 @@
 
 <main class="content" style="display: flex; flex-direction: column; min-height: 100vh;">
 
-  <!-- Find Friend -->
+  <!-- find friend section -->
   <section class="container section" id="find-friend">
     <h2 class="section-title">Find Friend</h2>
     <div class="friend-search" style="display:flex;gap:8px;align-items:center;">
-      <label for="friendQuery" class="visually-hidden">Search friends</label>
       <input id="friendQuery" type="search" placeholder="Search by name or event..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
       <button id="friendSearchBtn" class="btn-primary">Search</button>
     </div>
   </section>
 
-  <!-- Suggested Friends -->
-  <section class="container section suggested-block" id="suggested-block">
+  <!-- suggested friends -->
+  <section class="container section suggested-block">
     <h3 class="section-title">Suggested Friends</h3>
-    <div id="suggestedFriends" class="suggested-list" aria-live="polite"></div>
+    <div id="suggestedFriends" class="suggested-list"></div>
+  </section>
+
+  <!-- my friends list -->
+  <section class="container section">
+    <h3 class="section-title">My Friends</h3>
+    <div id="myFriendsList"></div>
   </section>
 
 </main>
@@ -45,32 +64,51 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  const suggestedBlock = document.querySelector('.suggested-block');
-  if (!suggestedBlock) return;
-
-  // Default suggested friends
+  // suggested friend data
   const templates = [
-  { name: 'Alex Morgan', event: 'Rock Concert' },
-  { name: 'Jamie Lee', event: 'Food Festival' },
-  { name: 'Sam Patel', event: 'Hockey Game' },
-  { name: 'Taylor Quinn', event: 'Basketball Match' },
-  { name: 'Riley Chen', event: 'Jazz Night' },
-  { name: 'Jordan Blake', event: 'Winter Carnival' }
-];
+    { name: 'Alex Morgan', event: 'Rock Concert' },
+    { name: 'Jamie Lee', event: 'Food Festival' },
+    { name: 'Sam Patel', event: 'Hockey Game' },
+    { name: 'Taylor Quinn', event: 'Basketball Match' },
+    { name: 'Riley Chen', event: 'Jazz Night' },
+    { name: 'Jordan Blake', event: 'Winter Carnival' }
+  ];
 
-  const out = document.getElementById('suggestedFriends');
+  const suggestedEl = document.getElementById('suggestedFriends');
+  const myFriendsEl = document.getElementById('myFriendsList');
   const queryEl = document.getElementById('friendQuery');
   const btn = document.getElementById('friendSearchBtn');
 
-  function makeCard(item) {
+  // return real event names used in search
+  function getRealEventNames() {
+    const builtIn = [
+      "Rock Concert",
+      "Food Festival",
+      "Hockey Game",
+      "Basketball Match",
+      "Jazz Night",
+      "Winter Carnival"
+    ];
+
+    const pub = JSON.parse(localStorage.getItem("eventsPublic") || "[]");
+    const cat = JSON.parse(localStorage.getItem("eventsCatalog") || "[]");
+
+    const pubNames = pub.map(e => e.name);
+    const catNames = cat.map(e => e.title);
+
+    return Array.from(new Set([...builtIn, ...pubNames, ...catNames]));
+  }
+
+  // build card for suggested friend
+  function makeSuggestedCard(item) {
     const card = document.createElement('div');
     card.className = 'card friend-card';
 
     card.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <strong>${item.name}</strong>
-          <div style="color:#666;font-size:0.95rem;margin-top:4px;">Last event: ${item.event}</div>
+          <div style="color:#666;font-size:0.95rem;">Last event: ${item.event}</div>
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn-primary btn-add">Add</button>
@@ -79,38 +117,25 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Add friend (with event linking)
+    // add friend and link them to real events
     card.querySelector('.btn-add').addEventListener('click', () => {
-
       const name = item.name;
 
-      // load global friends list
-      const allFriends = JSON.parse(localStorage.getItem("friendsList") || "[]");
-
-      // add to friends list if new
-      if (!allFriends.includes(name)) {
-        allFriends.push(name);
-        localStorage.setItem("friendsList", JSON.stringify(allFriends));
+      let friends = JSON.parse(localStorage.getItem("friendsList") || "[]");
+      if (!friends.includes(name)) {
+        friends.push(name);
+        localStorage.setItem("friendsList", JSON.stringify(friends));
       }
 
-      // load real events from storage
-      const pub = JSON.parse(localStorage.getItem("eventsPublic") || "[]");
-      const eventNames = pub.map(e => e.name);
-
-      // fallback to built-in event names
-      const fallback = ["Rock Concert", "Food Festival", "Hockey Game"];
-      const finalEvents = eventNames.length ? eventNames : fallback;
-
-      // pick 1–2 random events
+      const events = getRealEventNames();
       const assigned = [];
       const count = Math.floor(Math.random() * 2) + 1;
 
       for (let i = 0; i < count; i++) {
-        const ev = finalEvents[Math.floor(Math.random() * finalEvents.length)];
+        const ev = events[Math.floor(Math.random() * events.length)];
         if (!assigned.includes(ev)) assigned.push(ev);
       }
 
-      // save event → friends mapping
       const map = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
 
       assigned.forEach(ev => {
@@ -119,11 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       localStorage.setItem("friendsByEvent", JSON.stringify(map));
-
       alert(name + " added and attending: " + assigned.join(", "));
+      renderMyFriends();
+
+      // remove card from suggested friends
+      card.remove();
     });
 
-    // small view detail button
+    // view friend details
     card.querySelector('.btn-view').addEventListener('click', () => {
       alert(item.name + " — past event: " + item.event);
     });
@@ -131,15 +159,72 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
-  function render(list) {
-    out.innerHTML = '';
-    if (!list.length) {
-      out.innerHTML = '<p class="muted">No suggested friends.</p>';
+  // render my friends list
+  function renderMyFriends() {
+    const friends = JSON.parse(localStorage.getItem("friendsList") || "[]");
+    const map = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
+
+    myFriendsEl.innerHTML = '';
+
+    if (friends.length === 0) {
+      myFriendsEl.innerHTML = '<p class="muted">You have no friends added.</p>';
       return;
     }
-    list.forEach(i => out.appendChild(makeCard(i)));
+
+    friends.forEach(name => {
+      const attending = [];
+
+      // collect events this friend attends
+      Object.keys(map).forEach(ev => {
+        if (map[ev].includes(name)) attending.push(ev);
+      });
+
+      // build list with view links
+      const eventLinks = attending.length
+        ? attending.map(ev =>
+            `${ev} <a href="view-event.html?event=${encodeURIComponent(ev)}" style="color:#0a66c2;text-decoration:underline;margin-left:4px;">View</a>`
+          ).join(", ")
+        : "None";
+
+      const div = document.createElement('div');
+      div.className = 'friend-card-listed';
+
+      div.innerHTML = `
+        <div>
+          <strong>${name}</strong>
+          <div style="color:#666;font-size:0.9rem;margin-top:4px;">
+            Attending: ${eventLinks}
+          </div>
+        </div>
+        <button class="btn-secondary btn-remove">Remove</button>
+      `;
+
+      // remove friend
+      div.querySelector('.btn-remove').addEventListener('click', () => {
+        let f = JSON.parse(localStorage.getItem("friendsList") || "[]");
+        f = f.filter(n => n !== name);
+        localStorage.setItem("friendsList", JSON.stringify(f));
+
+        const map2 = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
+        Object.keys(map2).forEach(ev => {
+          map2[ev] = map2[ev].filter(n => n !== name);
+        });
+
+        localStorage.setItem("friendsByEvent", JSON.stringify(map2));
+        renderMyFriends();
+      });
+
+      myFriendsEl.appendChild(div);
+    });
   }
 
+  // render suggested list
+  function renderSuggested(list) {
+    suggestedEl.innerHTML = '';
+    list.forEach(i => suggestedEl.appendChild(makeSuggestedCard(i)));
+  }
+
+  // filter suggested friends
   function filter(q) {
     if (!q) return templates.slice();
     q = q.toLowerCase();
@@ -149,16 +234,20 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  render(templates);
-
-  btn?.addEventListener('click', () => render(filter(queryEl.value.trim())));
-  queryEl?.addEventListener('input', e => render(filter(e.target.value.trim())));
-  queryEl?.addEventListener('keydown', e => {
+  // search listeners
+  btn.addEventListener('click', () => renderSuggested(filter(queryEl.value.trim())));
+  queryEl.addEventListener('input', e => renderSuggested(filter(e.target.value.trim())));
+  queryEl.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      render(filter(queryEl.value.trim()));
+      renderSuggested(filter(queryEl.value.trim()));
     }
   });
+
+  // initial rendering
+  renderSuggested(templates);
+  renderMyFriends();
+
 });
 </script>
 
