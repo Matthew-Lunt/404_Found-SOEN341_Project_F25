@@ -29,4 +29,12 @@ Core Feature #4: Friends' Event Attendance
 •	Firebase (backend)
 
 # Techniques
-•	TBD
+•	Agile Methodology<br />
+• UI/UX Prototyping<br />
+• Version Control with GitHub<br />
+• User Stories & Acceptance Criteria<br />
+• Continuous Integration<br />
+• Black-Box Testing<br />
+• Unit, Integration & System Testing
+
+
