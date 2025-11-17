@@ -236,7 +236,10 @@
         // fallback if no doc
         if (role === "unknown") role = roleSelect;
 
-        localStorage.setItem("auth", JSON.stringify({ email, role }));
+        localStorage.setItem("auth", JSON.stringify({ 
+          email: user.email,
+          role: role,
+          uid: user.uid }));
         statusMessage.textContent = `✅ Logged in as ${email} (${role})`;
 
         if (role === "organizer") {
