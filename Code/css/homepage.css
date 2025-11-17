@@ -35,34 +35,6 @@ header {
     align-items: center;
     gap: 16px;
 }
-
-/* make the nav take the remaining space and distribute its children evenly */
-nav#nav-container {
-    display: flex;
-    align-items: center;
-    flex: 1;                 /* take remaining horizontal space */
-    justify-content: space-between; /* spread items across that space */
-    gap: 12px;
-}
-
-/* keep individual nav children from stretching unexpectedly */
-nav#nav-container > * {
-    flex: 0 0 auto;
-}
-
-/* optional: limit how wide the nav can grow on large screens */
-nav#nav-container {
-    max-width: 820px; /* adjust as needed */
-}
-
-/* small screens: stack/compact nav */
-@media (max-width: 720px) {
-    nav#nav-container {
-        justify-content: flex-end;
-        gap: 8px;
-    }
-}
-
 header nav a {
     color: white;
     margin: 0 10px;
@@ -94,9 +66,7 @@ header nav a:hover {
     border-color: #2C363F;
     cursor: pointer;
 }
-.btn-secondary:hover {
-    background: #7699D4;
-}
+
 .hero {
   height: 75vh;
   min-height: 400px;
@@ -161,7 +131,7 @@ footer {
     color: white;
     text-align: center;
     padding: 15px;
-    margin-top: 20px;
+    margin-top: auto;
 }
 
 

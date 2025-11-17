@@ -117,7 +117,7 @@
 <header>
   <div class="container header-content">
     <h1 class="logo"><a href="index.html">404TicketsFound </a></h1>
-    <nav>
+    <nav>   
         <a href="SearchResults.html">Search</a>
         <a href="AddFriend.html"> Add Friend </a> 
         
@@ -288,5 +288,13 @@
             }
         });
     </script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ensure suggested/friend elements and past-events items use the .card style
+  document.querySelectorAll(
+    '.friend-card, .user-item, #suggestedFriends > .friend-card, #past-events > *'
+  ).forEach(el => el.classList.add('card'));
+}); 
+</script>
 </body>
 </html>
