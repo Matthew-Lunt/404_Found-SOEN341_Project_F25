@@ -2,7 +2,8 @@ Detailed log of each team member's contribution (document)
 
 • Matthew Lunt: 
 • Kruti Patel:
-• Sophie Hariri: I assigned story points, risks and priorities. 
+• Sophie Hariri: I assigned story points, risks and priorities. I worked on the additional feature: updated the friend system so that when I add a friend, they are saved instantly, removed from the suggested list, and linked to real events from SearchResults.
+I added a My Friends section, including direct “View” links. I also made sure the event details page shows the friends attending.
 • Pawan Kumar Gupta:
 • Zeynep Ozcan:
 • Shadman Chowdhury: 
