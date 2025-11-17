@@ -20,9 +20,13 @@
   </style>
 </head>
 <body>
+
+<!-- Auth check -->
 <script>
-  const auth = JSON.parse(localStorage.getItem('auth')||'null');
-  if(!auth || auth.role!=='organizer') location.href='404NotFoundLogin.html?reason=organizer_only';
+  const authData = JSON.parse(localStorage.getItem('auth')||'null');
+  if(!authData || authData.role!=='organizer') {
+    location.href='404NotFoundLogin.html?reason=organizer_only';
+  }
 </script>
 
 <header>
@@ -36,11 +40,14 @@
     </nav>
   </div>
 </header>
+
 <script src="nav.js"></script>
+
 <div class="wrap">
   <h2>Create Event</h2>
 
   <div class="grid2">
+    <!-- Event Form -->
     <div class="card">
       <form id="createForm" novalidate>
         <input id="title" class="full" type="text" placeholder="Event title" required/>
@@ -58,10 +65,11 @@
         <div class="row full" style="justify-content:flex-end">
           <button id="publishBtn" class="btn" type="button">Publish Event</button>
         </div>
-        <p class="hint full">After publish you’ll be redirected to Search with this event highlighted.</p>
+        <p class="hint full">After publishing, you’ll be redirected to Search with this event highlighted.</p>
       </form>
     </div>
 
+    <!-- Event Preview -->
     <div class="card" id="preview">
       <h3 style="margin:0 0 8px">Preview</h3>
       <div class="p-title" style="font-weight:700;font-size:1.1rem">Event title</div>
@@ -80,68 +88,86 @@
 
 <footer><p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound</p></footer>
 
-<script>
-  const get=(k,f='[]')=>JSON.parse(localStorage.getItem(k)||f);
-  const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-  if(!localStorage.getItem('eventsCatalog')) set('eventsCatalog',[]);
-  if(!localStorage.getItem('attendees')) set('attendees',[]);
-  if(!localStorage.getItem('eventsPublic')) set('eventsPublic',[]);
+<!-- Firebase + Publish Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-  function toISO(d,t){ if(!d) return ''; return `${d}T${(t&&t.length?t:'18:00')}` }
-  function money(n){ n=Number(n||0); return n===0?'Free':`$${n}` }
-  function fmtRange(d,t1,t2){
-    if(!d) return '—';
-    const a=new Date(`${d}T${t1||'18:00'}`), b=new Date(`${d}T${t2||'21:00'}`);
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+    authDomain: "found-5ecc0.firebaseapp.com",
+    projectId: "found-5ecc0",
+    storageBucket: "found-5ecc0.appspot.com",
+    messagingSenderId: "160156481057",
+    appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Helper functions
+  function toISO(date, time){ return `${date}T${(time||'18:00')}`; }
+  function money(n){ n=Number(n||0); return n===0?'Free':`$${n}`; }
+  function fmtRange(date,start,end){
+    if(!date) return '—';
+    const a=new Date(`${date}T${start||'18:00'}`), b=new Date(`${date}T${end||'21:00'}`);
     const f=o=>o.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     return `${f(a)} → ${f(b)}`;
   }
+
+  // Update live preview
   function updatePreview(){
     const f=document.getElementById('createForm');
-    const title=f.title.value.trim()||'Event title';
-    const loc=f.location.value.trim()||'—';
-    const org=f.organization.value.trim()||'—';
-    const type=f.type.value||'Other';
-    const price=f.price.value;
-    const cap=f.capacity.value;
-    const date=f.date.value, start=f.start.value, end=f.end.value;
-    document.querySelector('#preview .p-title').textContent=title;
-    document.getElementById('pLoc').textContent=`📍 ${loc}`;
-    document.getElementById('pOrg').textContent=`🏢 ${org}`;
-    document.getElementById('pDate').textContent=`📅 ${fmtRange(date,start,end)}`;
-    document.getElementById('pType').textContent=`🎟️ ${type}`;
-    document.getElementById('pCap').textContent=`🧑‍🤝‍🧑 Capacity: ${cap||'—'}`;
-    document.getElementById('pPrice').textContent=money(price);
+    document.querySelector('#preview .p-title').textContent=f.title.value.trim()||'Event title';
+    document.getElementById('pLoc').textContent=`📍 ${f.location.value.trim()||'—'}`;
+    document.getElementById('pOrg').textContent=`🏢 ${f.organization.value.trim()||'—'}`;
+    document.getElementById('pDate').textContent=`📅 ${fmtRange(f.date.value,f.start.value,f.end.value)}`;
+    document.getElementById('pType').textContent=`🎟️ ${f.type.value||'Other'}`;
+    document.getElementById('pCap').textContent=`🧑‍🤝‍🧑 Capacity: ${f.capacity.value||'—'}`;
+    document.getElementById('pPrice').textContent=money(f.price.value);
   }
 
-  function publishEvent(){
+  // Publish event to Firebase
+  async function publishEvent(){
     const f=document.getElementById('createForm');
     const title=f.title.value.trim();
     const location=f.location.value.trim();
-    const organization=f.organization.value.trim()||'Organizer';
-    const type=f.type.value||'Other';
+    const organization=f.organization.value.trim() || 'Organizer';
+    const type=f.type.value || 'Other';
     const price=Number(f.price.value||0);
     const capacity=Number(f.capacity.value||0);
     const date=f.date.value;
+    const start=f.start.value||'18:00';
+    const end=f.end.value||'21:00';
+    const desc=f.desc.value || '';
+
     if(!title||!location||!date){ alert('Title, location, and date are required.'); return; }
-    const startISO=toISO(date,f.start.value);
-    const endISO=toISO(date,f.end.value);
 
-    // save to catalog (organizer + analytics)
-    const cat=get('eventsCatalog','[]');
-    const existing=cat.find(e=>e.title===title);
-    const row={ title, location, organization, type, price, capacity, date, start:startISO, end:endISO, desc:f.desc.value||'' };
-    if(existing) Object.assign(existing,row); else cat.push(row);
-    set('eventsCatalog',cat);
+    try {
+      const docRef = await addDoc(collection(db, "events"), {
+        title,
+        description: desc || title,  // description field used
+        location,
+        organization,
+        type,
+        price,
+        capacity,
+        date,
+        start: `${date}T${start}`,
+        end: `${date}T${end}`,
+        createdBy: auth.currentUser ? auth.currentUser.uid : null,
+        timestamp: Date.now()
+      });
 
-    // also save to a public list some pages can read
-    const pub=get('eventsPublic','[]');
-    const idx=pub.findIndex(e=>e.name===title);
-    const pubRow={ name:title, location, organization, type, price, date, start:startISO, end:endISO };
-    if(idx>=0) pub[idx]=pubRow; else pub.push(pubRow);
-    set('eventsPublic',pub);
-
-    alert('Event published.');
-    location.href=`SearchResults.html?event=${encodeURIComponent(title)}`;
+      alert(`Event published successfully!`);
+      location.href=`SearchResults.html?event=${encodeURIComponent(title)}`;
+    } catch(e) {
+      console.error("Error publishing event:", e);
+      alert('Failed to publish event.');
+    }
   }
 
   document.getElementById('publishBtn').addEventListener('click', publishEvent);
