@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -16,16 +17,40 @@
       border-radius: 8px;
       background: #fff;
       margin-bottom: 10px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card.friend-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #0a66c2;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background-color: #ccc;
     }
   </style>
 </head>
 
 <body>
-<header>
-  <div class="container header-content">
-    <h1 class="logo"><a href="index.html">404TicketsFound</a></h1>
-    <nav>   
+  <header>
+    <div class="container header-content">
+      <h1 class="logo"><a href="index.html">404TicketsFound</a></h1>
+      <nav>
         <a href="SearchResults.html">Search</a>
         <a href="AddFriend.html">Add Friend</a>
     </nav>
@@ -41,180 +66,146 @@
       <input id="friendQuery" type="search" placeholder="Search by name..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
       <button id="friendSearchBtn" class="btn-primary">Search</button>
     </div>
-  </section>
+  </header>
 
-  <!-- suggested friends -->
-  <section class="container section suggested-block">
-    <h3 class="section-title">Suggested Friends</h3>
-    <div id="suggestedFriends" class="suggested-list"></div>
-  </section>
-
-  <!-- my friends list -->
-  <section class="container section">
-    <h3 class="section-title">My Friends</h3>
-    <div id="myFriendsList"></div>
-  </section>
-
-</main>
-
-<footer>
-  <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
-</footer>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-
-  // suggested friend data
-  const templates = [
-    { name: 'Alex Morgan', event: 'Rock Concert' },
-    { name: 'Jamie Lee', event: 'Food Festival' },
-    { name: 'Sam Patel', event: 'Hockey Game' },
-    { name: 'Taylor Quinn', event: 'Basketball Match' },
-    { name: 'Riley Chen', event: 'Jazz Night' },
-    { name: 'Jordan Blake', event: 'Winter Carnival' }
-  ];
-
-  const suggestedEl = document.getElementById('suggestedFriends');
-  const myFriendsEl = document.getElementById('myFriendsList');
-  const queryEl = document.getElementById('friendQuery');
-  const btn = document.getElementById('friendSearchBtn');
-
-  // return real event names used in search
-  function getRealEventNames() {
-    const builtIn = [
-      "Rock Concert",
-      "Food Festival",
-      "Hockey Game",
-      "Basketball Match",
-      "Jazz Night",
-      "Winter Carnival"
-    ];
-
-    const pub = JSON.parse(localStorage.getItem("eventsPublic") || "[]");
-    const cat = JSON.parse(localStorage.getItem("eventsCatalog") || "[]");
-
-    const pubNames = pub.map(e => e.name);
-    const catNames = cat.map(e => e.title);
-
-    return Array.from(new Set([...builtIn, ...pubNames, ...catNames]));
-  }
-
-  // build card for suggested friend
-  function makeSuggestedCard(item) {
-    const card = document.createElement('div');
-    card.className = 'card friend-card';
-
-    card.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <strong>${item.name}</strong>
-          <div style="color:#666;font-size:0.95rem;">Last event: ${item.event}</div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-primary btn-add">Add</button>
-          <button class="btn-secondary btn-view">View</button>
-        </div>
+  <main class="content" style="display:flex; flex-direction:column; min-height:100vh;">
+    <section class="container section" id="find-friend">
+      <h2 class="section-title">Find Friend</h2>
+      <div class="friend-search" style="display:flex;gap:8px;align-items:center;">
+        <input id="friendQuery" type="search" placeholder="Search by name..."
+          style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
+        <button id="friendSearchBtn" class="btn-primary">Search</button>
       </div>
-    `;
+    </section>
 
-    // add friend and link them to real events
-    card.querySelector('.btn-add').addEventListener('click', () => {
-      const name = item.name;
+    <section class="container section suggested-block">
+      <h3 class="section-title">Suggested Friends</h3>
+      <div id="suggestedFriends" class="suggested-list"></div>
+    </section>
+  </main>
 
-      let friends = JSON.parse(localStorage.getItem("friendsList") || "[]");
-      if (!friends.includes(name)) {
-        friends.push(name);
-        localStorage.setItem("friendsList", JSON.stringify(friends));
+  <footer>
+    <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+      authDomain: "found-5ecc0.firebaseapp.com",
+      projectId: "found-5ecc0",
+      storageBucket: "found-5ecc0.appspot.com",
+      messagingSenderId: "160156481057",
+      appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Add friend
+    async function followUser(targetUID, btnElement) {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        alert("You must be logged in to add a friend.");
+        return;
       }
-
-      const events = getRealEventNames();
-      const assigned = [];
-      const count = Math.floor(Math.random() * 2) + 1;
-
-      for (let i = 0; i < count; i++) {
-        const ev = events[Math.floor(Math.random() * events.length)];
-        if (!assigned.includes(ev)) assigned.push(ev);
-      }
-
-      const map = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
-
-      assigned.forEach(ev => {
-        if (!map[ev]) map[ev] = [];
-        if (!map[ev].includes(name)) map[ev].push(name);
+      const userRef = doc(db, "Users", currentUser.uid);
+      await updateDoc(userRef, {
+        friends: arrayUnion(targetUID)
       });
-
-      localStorage.setItem("friendsByEvent", JSON.stringify(map));
-      alert(name + " added and attending: " + assigned.join(", "));
-      renderMyFriends();
-
-      // remove card from suggested friends
-      card.remove();
-    });
-
-    // view friend details
-    card.querySelector('.btn-view').addEventListener('click', () => {
-      alert(item.name + " — past event: " + item.event);
-    });
-
-    return card;
-  }
-
-  // render my friends list
-  function renderMyFriends() {
-    const friends = JSON.parse(localStorage.getItem("friendsList") || "[]");
-    const map = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
-
-    myFriendsEl.innerHTML = '';
-
-    if (friends.length === 0) {
-      myFriendsEl.innerHTML = '<p class="muted">You have no friends added.</p>';
-      return;
+      if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.textContent = "Following";
+      }
     }
 
-    friends.forEach(name => {
-      const attending = [];
-
-      // collect events this friend attends
-      Object.keys(map).forEach(ev => {
-        if (map[ev].includes(name)) attending.push(ev);
-      });
-
-      // build list with view links
-      const eventLinks = attending.length
-        ? attending.map(ev =>
-            `${ev} <a href="view-event.html?event=${encodeURIComponent(ev)}" style="color:#0a66c2;text-decoration:underline;margin-left:4px;">View</a>`
-          ).join(", ")
-        : "None";
-
-      const div = document.createElement('div');
-      div.className = 'friend-card-listed';
-
-      div.innerHTML = `
-        <div>
-          <strong>${name}</strong>
-          <div style="color:#666;font-size:0.9rem;margin-top:4px;">
-            Attending: ${eventLinks}
-          </div>
-        </div>
-        <button class="btn-secondary btn-remove">Remove</button>
-      `;
-
-      // remove friend
-      div.querySelector('.btn-remove').addEventListener('click', () => {
-        let f = JSON.parse(localStorage.getItem("friendsList") || "[]");
-        f = f.filter(n => n !== name);
-        localStorage.setItem("friendsList", JSON.stringify(f));
-
-        const map2 = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
-        Object.keys(map2).forEach(ev => {
-          map2[ev] = map2[ev].filter(n => n !== name);
+    // Fetch all users
+    async function getAllUsers() {
+      const usersCol = collection(db, "Users");
+      const querySnapshot = await getDocs(usersCol);
+      const users = [];
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        users.push({
+          uid: docSnap.id,
+          name: data.name || "Unnamed", // <-- uses 'name' field
+          event: data.lastEvent || "No recent event"
         });
+      });
+      return users;
+    }
 
-        localStorage.setItem("friendsByEvent", JSON.stringify(map2));
-        renderMyFriends();
+    document.addEventListener('DOMContentLoaded', () => {
+      const suggestedEl = document.getElementById('suggestedFriends');
+      const queryEl = document.getElementById('friendQuery');
+      const btn = document.getElementById('friendSearchBtn');
+      let allUsers = [];
+
+      // Render users
+      async function renderSuggested(users) {
+        suggestedEl.innerHTML = '';
+        if (users.length === 0) {
+          suggestedEl.innerHTML = '<p class="muted">No users found.</p>';
+          return;
+        }
+        users.forEach(user => {
+          const card = document.createElement('div');
+          card.className = 'card friend-card';
+          card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <strong>${user.name}</strong>
+                <div style="color:#666;font-size:0.95rem;">Last event: ${user.event}</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-primary btn-add">Add</button>
+                <button class="btn-secondary btn-view">View</button>
+              </div>
+            </div>
+          `;
+
+          const addBtn = card.querySelector('.btn-add');
+          const viewBtn = card.querySelector('.btn-view');
+
+          addBtn.addEventListener('click', async () => {
+            await followUser(user.uid, addBtn);
+          });
+
+          viewBtn.addEventListener('click', () => {
+            alert(user.name + " — past event: " + user.event);
+          });
+
+          // Disable add button if user is not logged in
+          if (!auth.currentUser) {
+            addBtn.disabled = true;
+            addBtn.textContent = "Login to Add";
+          }
+
+          suggestedEl.appendChild(card);
+        });
+      }
+
+      // Perform search
+      async function performSearch() {
+        const searchText = queryEl.value.trim().toLowerCase();
+        const filtered = allUsers.filter(u => u.name.toLowerCase().includes(searchText));
+        renderSuggested(filtered);
+      }
+
+      btn.addEventListener('click', performSearch);
+      queryEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); performSearch(); }
       });
 
-      myFriendsEl.appendChild(div);
+      // Load all users on page load
+      (async () => {
+        allUsers = await getAllUsers();
+        renderSuggested(allUsers);
+      })();
     });
   }
 
@@ -224,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     list.forEach(i => suggestedEl.appendChild(makeSuggestedCard(i)));
   }
 
-  // --- FILTER FUNCTION (search by name only) ---
+  //FILTER FUNCTION (search by name only)
   function filter(q) {
     if (!q) return templates.slice();
     q = q.toLowerCase();
