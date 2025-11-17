@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Event Details</title>
+<link rel="stylesheet" href="css/homepage.css" />
+<style>
+  #mapFrame {
+    width: 100%;
+    height: 300px;
+    border: 0;
+    border-radius: 12px;
+    margin-top: 10px;
+  }
+  .map-btn {
+    margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: #0a66c2;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+<header><h1>Event Details</h1></header>
+
+<section class="container">
+    <h2 id="name"></h2>
+    <p id="loc"></p>
+    <p id="org"></p>
+    <p id="date"></p>
+    <p id="price"></p>
+
+    <h3>📍 Location Map</h3>
+    <iframe id="mapFrame" loading="lazy" allowfullscreen></iframe>
+    <button id="openMapsBtn" class="map-btn">Open in Google Maps</button>
+    
+    <br><br>
+    <button onclick="history.back()" class="btn-secondary">⬅ Back</button>
+</section>
+
+<script>
+const p = new URLSearchParams(location.search);
+const eventName = p.get("event");
+
+// Built-in events
+const builtIn = [
+  { name:"Rock Concert",location:"Montreal, QC",organization:"LiveNation",price:50,date:"2025-10-15" },
+  { name:"Food Festival",location:"Toronto, ON",organization:"FoodieEvents",price:25,date:"2025-11-02" },
+  { name:"Hockey Game",location:"Vancouver, BC",organization:"SportsCorp",price:75,date:"2025-12-12" },
+  { name:"Basketball Match",location:"Ottawa, ON",organization:"NBA",price:45,date:"2025-10-28" },
+  { name:"Jazz Night",location:"Quebec City, QC",organization:"BlueNote Productions",price:0,date:"2025-11-18" },
+  { name:"Winter Carnival",location:"Calgary, AB",organization:"CityFest",price:0,date:"2025-12-05" }
+];
+
+
+// LocalStorage events
+const pub = JSON.parse(localStorage.getItem("eventsPublic") || "[]");
+const cat = JSON.parse(localStorage.getItem("eventsCatalog") || "[]");
+
+// Combine sources
+const all = [...builtIn, ...pub, ...cat];
+const ev = all.find(e => e.name === eventName || e.title === eventName);
+
+// Populate text fields
+document.getElementById("name").textContent = ev?.name || ev?.title || eventName;
+const locationText = ev?.location || "TBA";
+
+document.getElementById("loc").textContent = "📍 " + locationText;
+document.getElementById("org").textContent = "🏢 " + (ev?.organization || "Organizer");
+document.getElementById("date").textContent = "📅 " + (ev?.date || "Not Specified");
+document.getElementById("price").textContent = "💵 " + (ev?.price ?? "0");
+
+// Setup map embed
+const mapURL = "https://www.google.com/maps?q=" + encodeURIComponent(locationText) + "&output=embed";
+document.getElementById("mapFrame").src = mapURL;
+
+// Open in Google Maps button
+document.getElementById("openMapsBtn").onclick = () => {
+  window.open("https://www.google.com/maps?q=" + encodeURIComponent(locationText), "_blank");
+};
+</script>
+</body>
+</html>
