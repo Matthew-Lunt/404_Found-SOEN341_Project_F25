@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="EN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
+    <title>Search Results — 404TicketsFound</title>
     <link rel="stylesheet" href="css/homepage.css">
     <script src="JS/nav.js" defer></script>
 </head>
@@ -51,132 +51,142 @@
     <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
 </footer>
 
-<script>
-// Built-in sample events
-const builtInEvents = [
-  { name:"Rock Concert",location:"Montreal, QC",organization:"LiveNation",price:50,type:"Concert",date:"2025-10-15" },
-  { name:"Food Festival",location:"Toronto, ON",organization:"FoodieEvents",price:25,type:"Festival",date:"2025-11-02" },
-  { name:"Hockey Game",location:"Vancouver, BC",organization:"SportsCorp",price:75,type:"Sports",date:"2025-12-12" },
-  { name:"Basketball Match",location:"Ottawa, ON",organization:"NBA",price:45,type:"Sports",date:"2025-10-28" },
-  { name:"Jazz Night",location:"Quebec City, QC",organization:"BlueNote Productions",price:0,type:"Concert",date:"2025-11-18" },
-  { name:"Winter Carnival",location:"Calgary, AB",organization:"CityFest",price:0,type:"Festival",date:"2025-12-05" }
-];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const byName = arr => Object.fromEntries(arr.map(e=>[e.name||e.title,e]));
-const pubRaw = JSON.parse(localStorage.getItem('eventsPublic')||'[]');
-const catRaw = JSON.parse(localStorage.getItem('eventsCatalog')||'[]');
-
-const pub = byName(pubRaw);
-const cat = byName(catRaw);
-const builtin = byName(builtInEvents);
-
-const names = Array.from(new Set([...Object.keys(builtin),...Object.keys(cat),...Object.keys(pub)]));
-
-const pick = (...v)=>v.find(x=>x!==undefined && x!==null && x!=='');
-const nnum = v => { const n=Number(v); return isNaN(n)?0:n; };
-const hhmm = s => (s&&s.length?s:'18:00');
-const fmtYMD = s => {
-  if(!s) return '';
-  const [y,m,d]=s.split('-').map(Number);
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[(m||1)-1]} ${String(d).padStart(2,'0')}, ${y}`;
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+    authDomain: "found-5ecc0.firebaseapp.com",
+    projectId: "found-5ecc0",
+    storageBucket: "found-5ecc0.appspot.com",
+    messagingSenderId: "160156481057",
+    appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
 };
 
-const events = names.map(n=>{
-  const a=pub[n]||{}, b=cat[n]||{}, c=builtin[n]||{};
-  const date = pick(a.date,b.date,c.date,'');
-  return {
-    name:n,
-    location: pick(a.location,b.location,c.location,'TBA'),
-    organization: pick(a.organization,b.organization,c.organization,'Organizer'),
-    type: pick(a.type,b.type,c.type,'Event'),
-    date,
-    start: pick(a.start,b.start, date?`${date}T18:00:00`:``),
-    end: pick(a.end,b.end, date?`${date}T21:00:00`:``),
-    price: nnum(pick(a.price,b.price,c.price,0))
-  };
-}).filter(e=>e.name && e.date);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const form = document.getElementById("filter-form");
 const resultsDiv = document.getElementById("results");
 const resultsTitle = document.getElementById("results-title");
+const form = document.getElementById("filter-form");
 const eventDateEl = document.getElementById("eventDate");
 const allDatesEl = document.getElementById("allDates");
 
-allDatesEl.addEventListener("change", () => {
-  const useAll = allDatesEl.checked;
-  eventDateEl.disabled = useAll;
-  if (useAll) eventDateEl.value = "";
-});
+let events = [];
 
-function cardHTML(ev){
-  const priceNum = Number(ev.price);
-  const priceText = (!isFinite(priceNum)||isNaN(priceNum)||priceNum===0)?'Free':`$${priceNum}`;
+// Helper to format date
+const fmtYMD = s => {
+    if (!s) return '';
+    const [y,m,d]=s.split('-').map(Number);
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[(m||1)-1]} ${String(d).padStart(2,'0')}, ${y}`;
+};
 
-  return `
-    <div class="card">
-      <h4>${ev.name}</h4>
-      <p>📍 ${ev.location}</p>
-      <p>🏢 ${ev.organization}</p>
-      <p>📅 ${fmtYMD(ev.date)}</p>
-      <p>💵 ${priceText}</p>
-      <p>🎟️ ${ev.type}</p>
-      <button class="btn-primary buy-btn" data-name="${ev.name}">${priceNum===0?'Claim Free Ticket':'Buy Ticket'}</button>
-      <a class="btn-secondary" href="view-event.html?event=${encodeURIComponent(ev.name)}">View Event</a>
-    </div>`;
+// Load events from Firestore
+async function loadEvents() {
+    const eventsCol = collection(db, "events"); // lowercase collection
+    const snapshot = await getDocs(eventsCol);
+    events = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.description || 'Unnamed Event', // <-- use description
+            location: data.location || 'TBA',
+            organization: data.organization || 'Organizer',
+            type: data.type || 'Event',
+            date: data.date || '',
+            start: data.start || (data.date ? `${data.date}T18:00:00` : ''),
+            end: data.end || (data.date ? `${data.date}T21:00:00` : ''),
+            price: Number(data.price) || 0
+        };
+    });
+    displayEvents(events);
 }
 
-function displayEvents(list){ resultsDiv.innerHTML = list.map(cardHTML).join(""); }
-displayEvents(events);
+// Render events
+function cardHTML(ev) {
+    const priceText = ev.price === 0 ? 'Free' : `$${ev.price}`;
+    return `
+        <div class="card">
+            <h4>${ev.name}</h4>
+            <p>📍 ${ev.location}</p>
+            <p>🏢 ${ev.organization}</p>
+            <p>📅 ${fmtYMD(ev.date)}</p>
+            <p>💵 ${priceText}</p>
+            <p>🎟️ ${ev.type}</p>
+            <button class="btn-primary buy-btn" data-name="${ev.name}">${ev.price===0?'Claim Free Ticket':'Buy Ticket'}</button>
+            <a class="btn-secondary" href="view-event.html?event=${encodeURIComponent(ev.name)}">View Event</a>
+        </div>`;
+}
 
-form.addEventListener("submit",(e)=>{
-  e.preventDefault();
-  const location = document.getElementById("location").value.toLowerCase();
-  const organization = document.getElementById("organization").value.toLowerCase();
-  const minPrice = parseFloat(document.getElementById("minPrice").value) || 0;
-  const maxPrice = parseFloat(document.getElementById("maxPrice").value) || Infinity;
-  const type = document.getElementById("type").value;
-  const allDates = allDatesEl.checked;
-  const eventDate = eventDateEl.value;
+function displayEvents(list){
+    if(list.length === 0){
+        resultsDiv.innerHTML = '<p>No events found.</p>';
+    } else {
+        resultsDiv.innerHTML = list.map(cardHTML).join('');
+    }
+}
 
-  const filtered = events.filter(ev=>{
-    const p = Number(ev.price)||0;
-    const matchesLocation = ev.location.toLowerCase().includes(location);
-    const matchesOrg = ev.organization.toLowerCase().includes(organization);
-    const matchesPrice = p>=minPrice && p<=maxPrice;
-    const matchesType = type==="" || ev.type===type;
-    const matchesDate = allDates || eventDate==="" || ev.date===eventDate;
-    return matchesLocation && matchesOrg && matchesPrice && matchesType && matchesDate;
-  });
+// Filter events
+form.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const location = document.getElementById("location").value.toLowerCase();
+    const organization = document.getElementById("organization").value.toLowerCase();
+    const minPrice = parseFloat(document.getElementById("minPrice").value) || 0;
+    const maxPrice = parseFloat(document.getElementById("maxPrice").value) || Infinity;
+    const type = document.getElementById("type").value;
+    const allDates = allDatesEl.checked;
+    const eventDate = eventDateEl.value;
 
-  resultsTitle.textContent = "Your Search Results";
-  displayEvents(filtered);
+    const filtered = events.filter(ev=>{
+        const price = ev.price || 0;
+        const matchesLocation = ev.location.toLowerCase().includes(location);
+        const matchesOrg = ev.organization.toLowerCase().includes(organization);
+        const matchesPrice = price >= minPrice && price <= maxPrice;
+        const matchesType = type === "" || ev.type === type;
+        const matchesDate = allDates || eventDate === "" || ev.date === eventDate;
+        return matchesLocation && matchesOrg && matchesPrice && matchesType && matchesDate;
+    });
+
+    resultsTitle.textContent = "Your Search Results";
+    displayEvents(filtered);
 });
 
-resultsDiv.addEventListener("click", e => {
+// Buy or claim ticket
+resultsDiv.addEventListener("click", e=>{
     const btn = e.target.closest(".buy-btn");
-    if (!btn) return;
+    if(!btn) return;
     const name = btn.dataset.name;
     const ev = events.find(x => x.name === name);
-    if (!ev) return;
+    if(!ev) return;
 
-    const priceNum = Number(ev.price) || 0;
-    const ticketID = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-
+    const ticketID = Date.now().toString(36) + Math.random().toString(36).substring(2,8);
     localStorage.setItem('selectedTicket', JSON.stringify({
         event: ev.name,
         id: ticketID,
-        price: priceNum,
-        type: priceNum === 0 ? 'FREE' : 'PAID'
+        price: ev.price,
+        type: ev.price===0?'FREE':'PAID'
     }));
 
-    if (priceNum === 0) {
+    if(ev.price===0){
         alert(`You have claimed a free ticket for "${ev.name}"!`);
         location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&type=FREE`;
     } else {
-        location.href = `payment.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&price=${priceNum}&type=PAID`;
+        location.href = `payment.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&price=${ev.price}&type=PAID`;
     }
 });
+
+// Enable/disable date input
+allDatesEl.addEventListener("change", ()=>{
+    const useAll = allDatesEl.checked;
+    eventDateEl.disabled = useAll;
+    if(useAll) eventDateEl.value = "";
+});
+
+// Initial load
+loadEvents();
 </script>
 </body>
 </html>
