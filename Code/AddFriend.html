@@ -53,7 +53,18 @@
       <nav>
         <a href="SearchResults.html">Search</a>
         <a href="AddFriend.html">Add Friend</a>
-      </nav>
+    </nav>
+  </div>
+</header>
+
+<main class="content" style="display: flex; flex-direction: column; min-height: 100vh;">
+
+  <!-- find friend section -->
+  <section class="container section" id="find-friend">
+    <h2 class="section-title">Find Friend</h2>
+    <div class="friend-search" style="display:flex;gap:8px;align-items:center;">
+      <input id="friendQuery" type="search" placeholder="Search by name..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
+      <button id="friendSearchBtn" class="btn-primary">Search</button>
     </div>
   </header>
 
@@ -196,6 +207,39 @@
         renderSuggested(allUsers);
       })();
     });
-  </script>
+  }
+
+  // render suggested list
+  function renderSuggested(list) {
+    suggestedEl.innerHTML = '';
+    list.forEach(i => suggestedEl.appendChild(makeSuggestedCard(i)));
+  }
+
+  //FILTER FUNCTION (search by name only)
+  function filter(q) {
+    if (!q) return templates.slice();
+    q = q.toLowerCase();
+    return templates.filter(t =>
+      t.name.toLowerCase().includes(q) // only match the name
+    );
+  }
+
+  // search listeners
+  btn.addEventListener('click', () => renderSuggested(filter(queryEl.value.trim())));
+  queryEl.addEventListener('input', e => renderSuggested(filter(e.target.value.trim())));
+  queryEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      renderSuggested(filter(queryEl.value.trim()));
+    }
+  });
+
+  // initial rendering
+  renderSuggested(templates);
+  renderMyFriends();
+
+});
+</script>
+
 </body>
 </html>
