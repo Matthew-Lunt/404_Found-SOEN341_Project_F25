@@ -169,8 +169,8 @@
     <section class="section container">
         <h2 class="section-title">My Profile</h2>
         <div class="card">
-            <h3 id="user-name">John Doe</h3>
-            <p id="user-email">johndoe@email.com</p>
+            <h3 id="user-name"></h3>
+            <p id="user-email"></p>
             <button class="btn-primary" id="edit-profile-btn">Edit Profile</button>
         </div>
     </section>
@@ -285,6 +285,57 @@
                 friendSearchInput.value = '';
             } else {
                 alert('Please enter a name to search.');
+            }
+        });
+        </script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+            authDomain: "found-5ecc0.firebaseapp.com",
+            projectId: "found-5ecc0",
+            storageBucket: "found-5ecc0.appspot.com",
+            messagingSenderId: "160156481057",
+            appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const uid = user.uid;
+
+                const storedAuth = JSON.parse(localStorage.getItem('auth') || '{}');
+                const role = storedAuth.role || 'user';
+                const collection = role === 'organizer' ? 'Organizers' : 'Users';
+
+                try {
+                    const snap = await getDoc(doc(db, collection, uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        nameEl.textContent = data.name || 'No name set';
+                        emailEl.textContent = data.email || 'No email set';
+                    } else {
+                        nameEl.textContent = 'Profile not found';
+                        emailEl.textContent = '';
+                        console.warn('No document found for UID:', uid);
+                    }
+                } catch (err) {
+                    console.error('Error loading profile:', err);
+                    nameEl.textContent = 'Error loading profile';
+                    emailEl.textContent = '';
+                }
+
+            } else {
+                alert('You must be logged in to view your profile.');
+                window.location.href = '404NotFoundLogin.html';
             }
         });
     </script>
