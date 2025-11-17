@@ -95,7 +95,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Add friend
+    // Add friend function
     async function followUser(targetUID, btnElement) {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -112,7 +112,7 @@
       }
     }
 
-    // Fetch all users
+    // Fetch all users with last event attended
     async function getAllUsers() {
       const usersCol = collection(db, "Users");
       const querySnapshot = await getDocs(usersCol);
@@ -121,8 +121,11 @@
         const data = docSnap.data();
         users.push({
           uid: docSnap.id,
-          name: data.name || "Unnamed", // <-- uses 'name' field
-          event: data.lastEvent || "No recent event"
+          name: data.name || "Unnamed",
+          // ✅ get the last attended event from the array
+          event: (data.eventsAttended && data.eventsAttended.length > 0) 
+                  ? data.eventsAttended[data.eventsAttended.length - 1].event 
+                  : "No recent event"
         });
       });
       return users;
@@ -134,7 +137,7 @@
       const btn = document.getElementById('friendSearchBtn');
       let allUsers = [];
 
-      // Render users
+      // Render user cards
       async function renderSuggested(users) {
         suggestedEl.innerHTML = '';
         if (users.length === 0) {
@@ -168,7 +171,6 @@
             alert(user.name + " — past event: " + user.event);
           });
 
-          // Disable add button if user is not logged in
           if (!auth.currentUser) {
             addBtn.disabled = true;
             addBtn.textContent = "Login to Add";
