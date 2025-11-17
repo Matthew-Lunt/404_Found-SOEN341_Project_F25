@@ -111,18 +111,20 @@ document.getElementById("org").textContent = "🏢 " + (ev?.organization || "Org
 document.getElementById("date").textContent = "📅 " + (ev?.date || "Not Specified");
 document.getElementById("price").textContent = "💵 " + (ev?.price ?? "0");
 
-// friends attending
-const friendsData = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
-const keyName = ev?.name || ev?.title || eventName;
-const friends = friendsData[keyName] || [];
+// load event-specific friends
+const friendsByEvent = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
+const eventKey = ev?.name || ev?.title || eventName;
+const friends = friendsByEvent[eventKey] || [];
 
+// get elements
 const summary = document.getElementById("friendsSummary");
 const list = document.getElementById("friendsList");
 
+// render
 if (friends.length === 0) {
   summary.textContent = "No friends attending yet.";
 } else {
-  summary.textContent = friends.length === 1 
+  summary.textContent = friends.length === 1
     ? `${friends[0]} is attending`
     : `${friends.length} friends are attending`;
 
