@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="EN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="css/homepage.css">
+</head>
+<body>
+<header>
+  <div class="container header-content">
+    <h1 class="logo"><a href="index.html">404TicketsFound </a></h1>
+    <nav>
+        <a href="SearchResults.html">Search</a>
+        <a href="AddFriend.html"> Add Friend</a> 
+      </nav>
+  </div>
+</header>
+    <script src="nav.js"></script>
+
+    <section class="section container">
+        <h2 class="section-title">Filter Events</h2>
+        <form id="filter-form" class="form" style="gap:8px;display:flex;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="location" placeholder="Location">
+            <input type="text" id="organization" placeholder="Organization">
+            <input type="number" id="minPrice" placeholder="Min Price">
+            <input type="number" id="maxPrice" placeholder="Max Price">
+            <select id="type">
+                <option value="">All Types</option>
+                <option value="Concert">Concert</option>
+                <option value="Festival">Festival</option>
+                <option value="Sports">Sports</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="date" id="eventDate" disabled>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" id="allDates" checked>
+                    All dates
+                </label>
+            </div>
+            <button type="submit" class="btn-primary">Filter</button>
+        </form>
+    </section>
+
+    <section id="events" class="section container">
+        <h2 id="results-title" class="section-title">All Events</h2>
+        <div id="results" class="grid"></div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 404TicketsFound. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const builtInEvents = [
+          { name:"Rock Concert",location:"Montreal, QC",organization:"LiveNation",price:50,type:"Concert",date:"2025-10-15" },
+          { name:"Food Festival",location:"Toronto, ON",organization:"FoodieEvents",price:25,type:"Festival",date:"2025-11-02" },
+          { name:"Hockey Game",location:"Vancouver, BC",organization:"SportsCorp",price:75,type:"Sports",date:"2025-12-12" },
+          { name:"Basketball Match",location:"Ottawa, ON",organization:"NBA",price:45,type:"Sports",date:"2025-10-28" },
+          { name:"Jazz Night",location:"Quebec City, QC",organization:"BlueNote Productions",price:0,type:"Concert",date:"2025-11-18" },
+          { name:"Winter Carnival",location:"Calgary, AB",organization:"CityFest",price:0,type:"Festival",date:"2025-12-05" }
+        ];
+        
+        const byName = arr => Object.fromEntries(arr.map(e=>[e.name||e.title,e]));
+        const pubRaw = JSON.parse(localStorage.getItem('eventsPublic')||'[]');
+        const catRaw = JSON.parse(localStorage.getItem('eventsCatalog')||'[]');
+        
+        const pub = byName(pubRaw.map(e=>({
+          name:e.name||e.title, location:e.location, organization:e.organization,
+          price:e.price, type:e.type, date:e.date, start:e.start, end:e.end
+        })));
+        
+        const cat = byName(catRaw.map(e=>({
+          name:e.title||e.name, location:e.location, organization:e.organization,
+          price:e.price, type:e.type, date:e.date, start:e.start, end:e.end
+        })));
+        
+        const builtin = byName(builtInEvents);
+        
+        const names = Array.from(new Set([...Object.keys(builtin),...Object.keys(cat),...Object.keys(pub)]));
+        
+        const pick = (...v)=>v.find(x=>x!==undefined && x!==null && x!=='');
+        const nnum = v => { const n=Number(v); return isNaN(n)?0:n; };
+        const hhmm = s => (s&&s.length?s:'18:00');
+        const fmtYMD = s => {
+          if(!s) return '';
+          const [y,m,d]=s.split('-').map(Number);
+          const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          return `${months[(m||1)-1]} ${String(d).padStart(2,'0')}, ${y}`;
+        };
+        
+        const events = names.map(n=>{
+          const a=pub[n]||{}, b=cat[n]||{}, c=builtin[n]||{};
+          const date = pick(a.date,b.date,c.date,'');
+          const start = pick(a.start,b.start, date?`${date}T${hhmm('18:00')}:00`:'');
+          const end   = pick(a.end,b.end,   date?`${date}T${hhmm('21:00')}:00`:'');
+          return {
+            name:n,
+            location: pick(a.location,b.location,c.location,'TBA'),
+            organization: pick(a.organization,b.organization,c.organization,'Organizer'),
+            type: pick(a.type,b.type,c.type,'Event'),
+            date,
+            start,
+            end,
+            price: nnum(pick(a.price,b.price,c.price,0))
+          };
+        }).filter(e=>e.name && e.date);
+        
+        const form = document.getElementById("filter-form");
+        const resultsDiv = document.getElementById("results");
+        const resultsTitle = document.getElementById("results-title");
+        const eventDateEl = document.getElementById("eventDate");
+        const allDatesEl = document.getElementById("allDates");
+        
+        allDatesEl.addEventListener("change", () => {
+          const useAll = allDatesEl.checked;
+          eventDateEl.disabled = useAll;
+          if (useAll) eventDateEl.value = "";
+        });
+        
+        function cardHTML(ev){
+          const priceNum = Number(ev.price);
+          const priceText = (!isFinite(priceNum)||isNaN(priceNum)||priceNum===0)?'Free':`$${priceNum}`;
+          const btn = priceNum===0
+            ? `<button class="btn-primary buy-btn" data-name="${ev.name}">Claim Free Ticket</button>`
+            : `<button class="btn-primary buy-btn" data-name="${ev.name}">Buy Ticket</button>`;
+          return `
+            <div class="card">
+              <h4>${ev.name}</h4>
+              <p>📍 ${ev.location}</p>
+              <p>🏢 ${ev.organization}</p>
+              <p>📅 ${fmtYMD(ev.date)}</p>
+              <p>💵 ${priceText}</p>
+              <p>🎟️ ${ev.type}</p>
+              ${btn}
+            </div>`;
+        }
+        
+        function displayEvents(list){ resultsDiv.innerHTML = list.map(cardHTML).join(""); }
+        displayEvents(events);
+        
+        form.addEventListener("submit",(e)=>{
+          e.preventDefault();
+          const location = document.getElementById("location").value.toLowerCase();
+          const organization = document.getElementById("organization").value.toLowerCase();
+          const minPrice = parseFloat(document.getElementById("minPrice").value) || 0;
+          const maxPrice = parseFloat(document.getElementById("maxPrice").value) || Infinity;
+          const type = document.getElementById("type").value;
+          const allDates = allDatesEl.checked;
+          const eventDate = eventDateEl.value;
+        
+          const filtered = events.filter(ev=>{
+            const p = Number(ev.price)||0;
+            const matchesLocation = (ev.location||'').toLowerCase().includes(location);
+            const matchesOrg = (ev.organization||'').toLowerCase().includes(organization);
+            const matchesPrice = p>=minPrice && p<=maxPrice;
+            const matchesType = type==="" || ev.type===type;
+            const matchesDate = allDates || eventDate==="" || ev.date===eventDate;
+            return matchesLocation && matchesOrg && matchesPrice && matchesType && matchesDate;
+          });
+        
+          resultsTitle.textContent = "Your Search Results";
+          displayEvents(filtered);
+        });
+        
+        resultsDiv.addEventListener("click", e=>{
+          const btn = e.target.closest(".buy-btn");
+          if(!btn) return;
+          const name = btn.dataset.name;
+          const ev = events.find(x=>x.name===name);
+          if(!ev) return;
+          const priceNum = Number(ev.price)||0;
+          const ticketID = Date.now().toString(36)+Math.random().toString(36).substring(2,8);
+          const type = priceNum===0?'FREE':'PAID';
+          location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&type=${type}`;
+        });
+        </script>
+</body>
+</html>
