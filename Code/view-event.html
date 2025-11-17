@@ -5,7 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Event Details</title>
 <link rel="stylesheet" href="css/homepage.css" />
+
 <style>
+  .event-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+
+  .friend-pill {
+    display: inline-block;
+    background: #f0f2ff;
+    border: 1px solid #d0d4ff;
+    padding: 6px 10px;
+    border-radius: 999px;
+    margin: 4px 6px 0 0;
+    font-size: 0.9rem;
+  }
+
   #mapFrame {
     width: 100%;
     height: 300px;
@@ -13,6 +32,7 @@
     border-radius: 12px;
     margin-top: 10px;
   }
+
   .map-btn {
     margin-top: 10px;
     padding: 10px 16px;
@@ -26,24 +46,41 @@
 </style>
 </head>
 <body>
+
 <header><h1>Event Details</h1></header>
 
-<section class="container">
+<section class="container" style="max-width: 750px; margin-top: 20px;">
+
+  // event info card
+  <div class="event-card">
     <h2 id="name"></h2>
     <p id="loc"></p>
     <p id="org"></p>
     <p id="date"></p>
     <p id="price"></p>
+  </div>
 
+  // friends attending card
+  <div class="event-card">
+    <h3>🧑‍🤝‍🧑 Friends Attending</h3>
+    <p id="friendsSummary" style="margin-bottom:10px; color:#666;">No friends attending yet.</p>
+    <ul id="friendsList" style="list-style:none; padding-left:0; margin:0;"></ul>
+  </div>
+
+  // map card
+  <div class="event-card">
     <h3>📍 Location Map</h3>
     <iframe id="mapFrame" loading="lazy" allowfullscreen></iframe>
     <button id="openMapsBtn" class="map-btn">Open in Google Maps</button>
-    
-    <br><br>
-    <button onclick="history.back()" class="btn-secondary">⬅ Back</button>
+  </div>
+
+  // back button
+  <button onclick="history.back()" class="btn-secondary">⬅ Back</button>
+
 </section>
 
 <script>
+// get event name from URL
 const p = new URLSearchParams(location.search);
 const eventName = p.get("event");
 
@@ -57,16 +94,15 @@ const builtIn = [
   { name:"Winter Carnival",location:"Calgary, AB",organization:"CityFest",price:0,date:"2025-12-05" }
 ];
 
-
 // LocalStorage events
 const pub = JSON.parse(localStorage.getItem("eventsPublic") || "[]");
 const cat = JSON.parse(localStorage.getItem("eventsCatalog") || "[]");
 
-// Combine sources
+// combine event sources
 const all = [...builtIn, ...pub, ...cat];
 const ev = all.find(e => e.name === eventName || e.title === eventName);
 
-// Populate text fields
+// fill event info
 document.getElementById("name").textContent = ev?.name || ev?.title || eventName;
 const locationText = ev?.location || "TBA";
 
@@ -75,14 +111,37 @@ document.getElementById("org").textContent = "🏢 " + (ev?.organization || "Org
 document.getElementById("date").textContent = "📅 " + (ev?.date || "Not Specified");
 document.getElementById("price").textContent = "💵 " + (ev?.price ?? "0");
 
-// Setup map embed
+// load event-specific friends
+const friendsByEvent = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
+const eventKey = ev?.name || ev?.title || eventName;
+const friends = friendsByEvent[eventKey] || [];
+
+// get elements
+const summary = document.getElementById("friendsSummary");
+const list = document.getElementById("friendsList");
+
+// render
+if (friends.length === 0) {
+  summary.textContent = "No friends attending yet.";
+} else {
+  summary.textContent = friends.length === 1
+    ? `${friends[0]} is attending`
+    : `${friends.length} friends are attending`;
+
+  list.innerHTML = friends
+    .map(f => `<li class="friend-pill">${f}</li>`)
+    .join("");
+}
+
+// setup map
 const mapURL = "https://www.google.com/maps?q=" + encodeURIComponent(locationText) + "&output=embed";
 document.getElementById("mapFrame").src = mapURL;
 
-// Open in Google Maps button
+// open in maps
 document.getElementById("openMapsBtn").onclick = () => {
   window.open("https://www.google.com/maps?q=" + encodeURIComponent(locationText), "_blank");
 };
 </script>
+
 </body>
 </html>
