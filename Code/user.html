@@ -36,24 +36,6 @@
                 background-color: #a23445;
             }
 
-        nav {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-            nav a {
-                padding: 0.6rem 1.2rem;
-                border-radius: 8px;
-                text-decoration: none;
-                color: black;
-            }
-
-                nav a.active {
-                    background-color: #912338;
-                    color: white;
-                }
 
         .calendar-container {
             background: #fff;
@@ -128,30 +110,20 @@
             border: 1px solid #ccc;
         }
     </style>
+    <script src="JS/nav.js" defer></script> 
 </head>
 
 <body>
-    <header>
-        <div class="container header-content">
-            <h1 class="logo">404TicketsFound</h1>
-            <nav id="nav-container">
-                <a href="index.html">Home</a>
-                <a href="SearchResults.html">Search</a>
-
-                <!-- 👇 Add Friend Button and Popup -->
-                <div style="position: relative;">
-                    <button id="add-friend-btn" class="btn-primary">Add Friend</button>
-                    <div id="friend-search-container">
-                        <input type="text" id="friend-search" placeholder="Search for a friend...">
-                        <button id="friend-search-btn" class="btn-primary" style="margin-left:5px;">Search</button>
-                    </div>
-                </div>
-
-                <a href="user.html" class="active">My Profile</a>
-            </nav>
-        </div>
-    </header>
-    <script src="nav.js"></script>
+<header>
+  <div class="container header-content">
+    <h1 class="logo"><a href="index.html">404TicketsFound </a></h1>
+    <nav>
+        <a href="SearchResults.html">Search</a>
+        <a href="AddFriend.html"> Add Friend </a> 
+        
+      </nav>
+  </div>
+</header>
     <script>
     (function(){
   const nav = document.getElementById('nav-container');
