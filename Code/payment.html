@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Payment</title>
+    <link rel="stylesheet" href="css/homepage.css">
+</head>
+<body class="bg-light">
+
+<header>
+    <div class="container header-content">
+        <h1 class="logo"><a href="index.html">404TicketsFound</a></h1>
+        <nav>
+            <a href="SearchResults.html">Search</a>
+            <a href="AddFriend.html">Add Friend</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Ticket Payment</h2>
+
+            <div class="mb-4">
+                <h5>Event Summary</h5>
+                <ul class="list-group">
+                    <ul class="list-group-item"><strong>Event:</strong> <span id="eventName">—</span></li>
+                    <ul class="list-group-item"><strong>Price:</strong> <span id="ticketPrice">—</span></li>
+                </ul>
+            </div>
+
+            <form id="paymentForm">
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price of Event</label>
+                    <input type="text" class="form-control" id="name" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Confirm Payment</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound. All rights reserved.</p>
+</footer>
+
+<script type="module">
+    const params = new URLSearchParams(window.location.search);
+
+    let eventName = params.get('event');
+    let ticketPrice = params.get('price');
+    let ticketType = params.get('type');
+
+    if (!eventName) {
+        const ticket = JSON.parse(localStorage.getItem('selectedTicket') || '{}');
+        eventName = ticket.event;
+        ticketPrice = ticket.price;
+        ticketType = ticket.type;
+    }
+
+    eventName = eventName || 'Unknown Event';
+    ticketPrice = Number(ticketPrice) || 0;
+    ticketType = ticketType || 'PAID';
+
+    document.getElementById('eventName').textContent = eventName;
+    document.getElementById('ticketPrice').textContent = ticketType.toUpperCase() === 'FREE' ? 'Free' : `$${ticketPrice}`;
+
+    document.getElementById('paymentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const enteredPrice = Number(document.getElementById('name').value);
+        
+        if (isNaN(enteredPrice)) {
+            alert('Please enter a valid price.');
+            return;
+        }
+
+        if (enteredPrice !== ticketPrice) {
+            alert(`Entered price does not match the ticket price of $${ticketPrice}.`);
+            return;
+        }
+
+        localStorage.setItem('selectedTicket', JSON.stringify({
+            event: eventName,
+            price: ticketPrice,
+            type: ticketType,
+            id: Date.now().toString(36) + Math.random().toString(36).substring(2, 8)
+        }));
+
+        location.href = `ticket-confirmation.html?event=${encodeURIComponent(eventName)}&type=${ticketType}`;
+    });
+</script>
+
+</body>
+</html>

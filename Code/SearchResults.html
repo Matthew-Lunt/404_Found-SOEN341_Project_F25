@@ -165,17 +165,30 @@
           displayEvents(filtered);
         });
         
-        resultsDiv.addEventListener("click", e=>{
-          const btn = e.target.closest(".buy-btn");
-          if(!btn) return;
-          const name = btn.dataset.name;
-          const ev = events.find(x=>x.name===name);
-          if(!ev) return;
-          const priceNum = Number(ev.price)||0;
-          const ticketID = Date.now().toString(36)+Math.random().toString(36).substring(2,8);
-          const type = priceNum===0?'FREE':'PAID';
-          location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&type=${type}`;
-        });
+        resultsDiv.addEventListener("click", e => {
+    const btn = e.target.closest(".buy-btn");
+    if (!btn) return;
+    const name = btn.dataset.name;
+    const ev = events.find(x => x.name === name);
+    if (!ev) return;
+
+    const priceNum = Number(ev.price) || 0;
+    const ticketID = Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+
+    localStorage.setItem('selectedTicket', JSON.stringify({
+        event: ev.name,
+        id: ticketID,
+        price: priceNum,
+        type: priceNum === 0 ? 'FREE' : 'PAID'
+    }));
+
+    if (priceNum === 0) {
+        alert(`You have claimed a free ticket for "${ev.name}"!`);
+        location.href = `ticket-confirmation.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&type=FREE`;
+    } else {
+        location.href = `payment.html?event=${encodeURIComponent(ev.name)}&id=${ticketID}&price=${priceNum}&type=PAID`;
+    }
+});
         </script>
 </body>
 </html>
