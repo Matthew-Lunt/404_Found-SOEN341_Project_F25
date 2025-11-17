@@ -26,15 +26,15 @@
             <div class="mb-4">
                 <h5>Event Summary</h5>
                 <ul class="list-group">
-                    <ul class="list-group-item"><strong>Event:</strong> <span id="eventName">—</span></li>
-                    <ul class="list-group-item"><strong>Price:</strong> <span id="ticketPrice">—</span></li>
+                    <li class="list-group-item"><strong>Event:</strong> <span id="eventName">—</span></li>
+                    <li class="list-group-item"><strong>Price:</strong> <span id="ticketPrice">—</span></li>
                 </ul>
             </div>
 
             <form id="paymentForm">
                 <div class="mb-3">
                     <label for="price" class="form-label">Price of Event</label>
-                    <input type="text" class="form-control" id="name" required>
+                    <input type="text" class="form-control" id="price" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Confirm Payment</button>
             </form>
@@ -48,8 +48,24 @@
 </footer>
 
 <script type="module">
-    const params = new URLSearchParams(window.location.search);
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+        authDomain: "found-5ecc0.firebaseapp.com",
+        projectId: "found-5ecc0",
+        storageBucket: "found-5ecc0.appspot.com",
+        messagingSenderId: "160156481057",
+        appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const params = new URLSearchParams(window.location.search);
     let eventName = params.get('event');
     let ticketPrice = params.get('price');
     let ticketType = params.get('type');
@@ -68,10 +84,10 @@
     document.getElementById('eventName').textContent = eventName;
     document.getElementById('ticketPrice').textContent = ticketType.toUpperCase() === 'FREE' ? 'Free' : `$${ticketPrice}`;
 
-    document.getElementById('paymentForm').addEventListener('submit', (e) => {
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const enteredPrice = Number(document.getElementById('name').value);
-        
+        const enteredPrice = Number(document.getElementById('price').value);
+
         if (isNaN(enteredPrice)) {
             alert('Please enter a valid price.');
             return;
@@ -82,13 +98,37 @@
             return;
         }
 
-        localStorage.setItem('selectedTicket', JSON.stringify({
+        // Save ticket in localStorage
+        const ticketRecord = {
             event: eventName,
             price: ticketPrice,
             type: ticketType,
             id: Date.now().toString(36) + Math.random().toString(36).substring(2, 8)
-        }));
+        };
+        localStorage.setItem('selectedTicket', JSON.stringify(ticketRecord));
 
+        // Add event to user's "eventsAttended" array in Firestore
+        const user = auth.currentUser;
+        if (user) {
+            const userRef = doc(db, "Users", user.uid);
+            try {
+                await updateDoc(userRef, {
+                    eventsAttended: arrayUnion({
+                        event: eventName,
+                        price: ticketPrice,
+                        type: ticketType,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                console.log('Event added to user record.');
+            } catch (err) {
+                console.error('Error updating user events:', err);
+            }
+        } else {
+            console.warn('User not logged in, skipping Firestore update.');
+        }
+
+        // Redirect to confirmation page
         location.href = `ticket-confirmation.html?event=${encodeURIComponent(eventName)}&type=${ticketType}`;
     });
 </script>
