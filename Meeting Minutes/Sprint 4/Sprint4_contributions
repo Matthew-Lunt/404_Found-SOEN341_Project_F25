@@ -4,7 +4,7 @@ Detailed log of each team member's contribution (document)
 • Kruti Patel: I contributed by performing all the testing activities, including unit testing, integration testing, system testing, regression testing, and user acceptance testing for all user stories. I also developed the testing document, created and managed issues on GitHub, and reviewed pull requests.
 • Sophie Hariri: I assigned story points, risks and priorities. I worked on the additional feature: updated the friend system so that when I add a friend, they are saved instantly, removed from the suggested list, and linked to real events from SearchResults.
 I added a My Friends section, including direct “View” links. I also made sure the event details page shows the friends attending.
-• Pawan Kumar Gupta:  I assisted with informal testing and identifying minor issues during development. I contributed to debugging sessions, answered questions related to implementation details, and reviewed parts of teammates’ work to ensure consistency.
+• Pawan Kumar Gupta:  I added functionality for the "edit Profile" button for user to edit their username or email. I assisted with informal testing and identifying minor issues during development. I contributed to debugging sessions, answered questions related to implementation details, and reviewed parts of teammates’ work to ensure consistency.
 • Zeynep Ozcan:
 • Shadman Chowdhury: I worked on the "event view" page where I transferred the event details onto the page and implemented a map showing the city where the event takes place in. I fixed a bug in "search friend" feature. I created a task and discussed others with teammates.
 • Gracie Idonije: 
