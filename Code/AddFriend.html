@@ -53,18 +53,7 @@
       <nav>
         <a href="SearchResults.html">Search</a>
         <a href="AddFriend.html">Add Friend</a>
-    </nav>
-  </div>
-</header>
-
-<main class="content" style="display: flex; flex-direction: column; min-height: 100vh;">
-
-  <!-- find friend section -->
-  <section class="container section" id="find-friend">
-    <h2 class="section-title">Find Friend</h2>
-    <div class="friend-search" style="display:flex;gap:8px;align-items:center;">
-      <input id="friendQuery" type="search" placeholder="Search by name..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
-      <button id="friendSearchBtn" class="btn-primary">Search</button>
+      </nav>
     </div>
   </header>
 
@@ -106,7 +95,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Add friend
+    // Add friend function
     async function followUser(targetUID, btnElement) {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -123,7 +112,7 @@
       }
     }
 
-    // Fetch all users
+    // Fetch all users with last event attended
     async function getAllUsers() {
       const usersCol = collection(db, "Users");
       const querySnapshot = await getDocs(usersCol);
@@ -132,8 +121,11 @@
         const data = docSnap.data();
         users.push({
           uid: docSnap.id,
-          name: data.name || "Unnamed", // <-- uses 'name' field
-          event: data.lastEvent || "No recent event"
+          name: data.name || "Unnamed",
+          // ✅ get the last attended event from the array
+          event: (data.eventsAttended && data.eventsAttended.length > 0) 
+                  ? data.eventsAttended[data.eventsAttended.length - 1].event 
+                  : "No recent event"
         });
       });
       return users;
@@ -145,7 +137,7 @@
       const btn = document.getElementById('friendSearchBtn');
       let allUsers = [];
 
-      // Render users
+      // Render user cards
       async function renderSuggested(users) {
         suggestedEl.innerHTML = '';
         if (users.length === 0) {
@@ -179,7 +171,6 @@
             alert(user.name + " — past event: " + user.event);
           });
 
-          // Disable add button if user is not logged in
           if (!auth.currentUser) {
             addBtn.disabled = true;
             addBtn.textContent = "Login to Add";
@@ -207,39 +198,6 @@
         renderSuggested(allUsers);
       })();
     });
-  }
-
-  // render suggested list
-  function renderSuggested(list) {
-    suggestedEl.innerHTML = '';
-    list.forEach(i => suggestedEl.appendChild(makeSuggestedCard(i)));
-  }
-
-  //FILTER FUNCTION (search by name only)
-  function filter(q) {
-    if (!q) return templates.slice();
-    q = q.toLowerCase();
-    return templates.filter(t =>
-      t.name.toLowerCase().includes(q) // only match the name
-    );
-  }
-
-  // search listeners
-  btn.addEventListener('click', () => renderSuggested(filter(queryEl.value.trim())));
-  queryEl.addEventListener('input', e => renderSuggested(filter(e.target.value.trim())));
-  queryEl.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      renderSuggested(filter(queryEl.value.trim()));
-    }
-  });
-
-  // initial rendering
-  renderSuggested(templates);
-  renderMyFriends();
-
-});
-</script>
-
+  </script>
 </body>
 </html>
