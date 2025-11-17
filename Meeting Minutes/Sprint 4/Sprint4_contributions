@@ -1,6 +1,6 @@
 Detailed log of each team member's contribution (document)
 
-• Matthew Lunt: I reworked the add friends page to work with the database records and add friended users to the array of friends for that user, updated rules governing the database for access and use in the webpages, reviewed and advised on questions related to database.
+• Matthew Lunt: I reworked the add friends page to work with the database records and add friended users to the array of friends for that user, connected the events page to use database records, updated rules governing the database for access and use in the webpages, reviewed and advised on questions related to database.
 • Kruti Patel: I contributed by performing all the testing activities, including unit testing, integration testing, system testing, regression testing, and user acceptance testing for all user stories. I also developed the testing document, created and managed issues on GitHub, and reviewed pull requests.
 • Sophie Hariri: I assigned story points, risks and priorities. I worked on the additional feature: updated the friend system so that when I add a friend, they are saved instantly, removed from the suggested list, and linked to real events from SearchResults.
 I added a My Friends section, including direct “View” links. I also made sure the event details page shows the friends attending.
