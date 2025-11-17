@@ -38,7 +38,7 @@
   <section class="container section" id="find-friend">
     <h2 class="section-title">Find Friend</h2>
     <div class="friend-search" style="display:flex;gap:8px;align-items:center;">
-      <input id="friendQuery" type="search" placeholder="Search by name or event..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
+      <input id="friendQuery" type="search" placeholder="Search by name..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
       <button id="friendSearchBtn" class="btn-primary">Search</button>
     </div>
   </section>
@@ -224,13 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
     list.forEach(i => suggestedEl.appendChild(makeSuggestedCard(i)));
   }
 
-  // filter suggested friends
+  // --- FILTER FUNCTION (search by name only) ---
   function filter(q) {
     if (!q) return templates.slice();
     q = q.toLowerCase();
     return templates.filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      t.event.toLowerCase().includes(q)
+      t.name.toLowerCase().includes(q) // only match the name
     );
   }
 
