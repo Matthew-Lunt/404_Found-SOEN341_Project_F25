@@ -8,4 +8,4 @@ I added a My Friends section, including direct “View” links. I also made sur
 • Zeynep Ozcan:
 • Shadman Chowdhury: I worked on the "event view" page where I transferred the event details onto the page and implemented a map showing the city where the event takes place in. I fixed a bug in "search friend" feature. I created a task and discussed others with teammates.
 • Gracie Idonije: 
-• Joshua Vilda: 
+• Joshua Vilda: I worked on the Friend Page creatint the tmeplate with hard coded users to be used as a placeholder until it is linked to the backend, I standardized the navigation menu easing the use of our page some functionalities were missing/didnt follow the convention on other pages. Aided Zeynep in linking the backend with the user page to display the correct email and username.
