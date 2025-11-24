@@ -89,7 +89,8 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
   // Firebase config (same as SearchResults.html)
   const firebaseConfig = {
@@ -103,6 +104,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
   // get event name from URL
   const p = new URLSearchParams(location.search);
@@ -120,7 +122,6 @@
   const friendsSummaryEl = document.getElementById("friendsSummary");
   const friendsListEl    = document.getElementById("friendsList");
 
-  // helper: format date yyyy-mm-dd -> "MMM DD, YYYY"
   const fmtYMD = (s) => {
     if (!s) return "Not specified";
     const [y, m, d] = s.split("-").map(Number);
@@ -133,13 +134,10 @@
       const eventsCol = collection(db, "events");
       const snapshot = await getDocs(eventsCol);
 
-      // In SearchResults.html you used:
-      // name: data.description || 'Unnamed Event'
-      // so match on description
-      const allEvents = snapshot.docs.map(doc => {
-        const data = doc.data();
+      const allEvents = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
         return {
-          id: doc.id,
+          id: docSnap.id,
           name: data.description || "Unnamed Event",
           location: data.location || "TBA",
           organization: data.organization || "Organizer",
@@ -172,26 +170,46 @@
       dateEl.textContent = "📅 " + (ev.date ? fmtYMD(ev.date) : "Not specified");
       priceEl.textContent= "💵 " + (ev.price === 0 ? "Free" : `$${ev.price}`);
 
-      // ----- Friends attending (still using localStorage by event name) -----
-      const friendsByEvent = JSON.parse(localStorage.getItem("friendsByEvent") || "{}");
-      const eventKey = ev.name;
-      const friends = friendsByEvent[eventKey] || [];
+      // friends attending
+      onAuthStateChanged(auth, async user => {
+        if (!user) return;
 
-      if (friends.length === 0) {
-        friendsSummaryEl.textContent = "No friends attending yet.";
-        friendsListEl.innerHTML = "";
-      } else {
-        friendsSummaryEl.textContent =
-          friends.length === 1
-            ? `${friends[0]} is attending`
-            : `${friends.length} friends are attending`;
+        // Load current user's friends
+        const meSnap = await getDoc(doc(db, "Users", user.uid));
+        const myFriends = meSnap.exists() ? (meSnap.data().friends || []) : [];
 
-        friendsListEl.innerHTML = friends
-          .map(f => `<li class="friend-pill">${f}</li>`)
-          .join("");
-      }
+        const attending = [];
 
-      // ----- Map setup -----
+        // For each friend, check if they attended THIS event
+        for (const friendUID of myFriends) {
+          const friendSnap = await getDoc(doc(db, "Users", friendUID));
+          if (!friendSnap.exists()) continue;
+
+          const friendData = friendSnap.data();
+          const attended = friendData.eventsAttended || [];
+
+          if (attended.some(e => e.event === ev.name)) {
+            attending.push(friendData.name || "Unknown");
+          }
+        }
+
+        // Render UI
+        if (attending.length === 0) {
+          friendsSummaryEl.textContent = "No friends attending yet.";
+          friendsListEl.innerHTML = "";
+        } else {
+          friendsSummaryEl.textContent =
+            attending.length === 1
+              ? `${attending[0]} is attending`
+              : `${attending.length} friends are attending`;
+
+          friendsListEl.innerHTML = attending
+            .map(f => `<li class="friend-pill">${f}</li>`)
+            .join("");
+        }
+      });
+
+      // Map
       const mapURL = "https://www.google.com/maps?q=" + encodeURIComponent(locationText) + "&output=embed";
       mapFrame.src = mapURL;
 

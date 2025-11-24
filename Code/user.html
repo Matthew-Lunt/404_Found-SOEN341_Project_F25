@@ -430,7 +430,7 @@
                     emailEl.textContent = data.email || 'No email set';
                     
                     // Load friends list
-                    await loadFriendsList(uid, data.following || []);
+                    await loadFriendsList(uid, data.friends || []);
                 } else {
                     nameEl.textContent = 'Profile not found';
                     emailEl.textContent = '';
@@ -456,7 +456,7 @@
                             const snap = await getDoc(doc(db, currentCollection, currentUser.uid));
                             if (snap.exists()) {
                                 const data = snap.data();
-                                await loadFriendsList(currentUser.uid, data.following || []);
+                                await loadFriendsList(currentUser.uid, data.friends || []);
                             }
                         } catch (err) {
                             console.error('Error refreshing friends:', err);
