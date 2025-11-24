@@ -16,7 +16,10 @@
       if (auth.role === 'organizer') {
         extra = `<a href="organizer.html" class="btn-secondary" style="margin-left:8px;">Dashboard</a>`;
       } else if (auth.role === 'user') {
-        extra = `<a href="user.html" class="btn-secondary" style="margin-left:8px;">My Profile</a>`;
+        extra = `
+          <a href="AddFriend.html" class="btn-secondary" style="margin-left:8px;">Add Friend</a>
+          <a href="user.html" class="btn-secondary" style="margin-left:8px;">My Profile</a>
+        `;
       } else if (auth.role === 'admin') {
         extra = `<a href="AdminManagement.html" class="btn-secondary" style="margin-left:8px;">Admin Panel</a>`;
       }
