@@ -135,7 +135,7 @@
       const allEvents = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
-          id: doc.id,
+          id: docSnap.id,
           name: data.description || "Unnamed Event",
           location: data.location || "TBA",
           organization: data.organization || "Organizer",

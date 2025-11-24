@@ -50,9 +50,8 @@
   <header>
     <div class="container header-content">
       <h1 class="logo"><a href="index.html">404TicketsFound</a></h1>
-      <nav>
+      <nav id="nav-container">
         <a href="SearchResults.html">Search</a>
-        <a href="AddFriend.html">Add Friend</a>
       </nav>
     </div>
   </header>
@@ -71,6 +70,11 @@
       <h3 class="section-title">Suggested Friends</h3>
       <div id="suggestedFriends" class="suggested-list"></div>
     </section>
+
+    <section class="container section">
+      <h3 class="section-title">My Friends</h3>
+      <div id="myFriendsList" class="suggested-list"></div>
+    </section>
   </main>
 
   <footer>
@@ -79,8 +83,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, arrayUnion, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -122,15 +126,59 @@
         users.push({
           uid: docSnap.id,
           name: data.name || "Unnamed",
-          // ✅ get the last attended event from the array
-          event: (data.eventsAttended && data.eventsAttended.length > 0) 
-                  ? data.eventsAttended[data.eventsAttended.length - 1].event 
-                  : "No recent event"
+          event: (data.eventsAttended && data.eventsAttended.length > 0)
+            ? data.eventsAttended[data.eventsAttended.length - 1].event
+            : "No recent event"
         });
       });
       return users;
     }
 
+    async function loadMyFriends() {
+  if (!auth.currentUser) {
+    myFriendsEl.innerHTML = "<p class='muted'>Please log in to see your friends.</p>";
+    return;
+  }
+
+  // Load current user's friends list
+  const meSnap = await getDoc(doc(db, "Users", auth.currentUser.uid));
+  const myFriends = meSnap.exists() ? (meSnap.data().friends || []) : [];
+
+  if (myFriends.length === 0) {
+    myFriendsEl.innerHTML = "<p class='muted'>You have no friends added yet.</p>";
+    return;
+  }
+
+    myFriendsEl.innerHTML = "";
+
+    // Fetch all users and filter by friend list
+    const usersCol = collection(db, "Users");
+    const querySnapshot = await getDocs(usersCol);
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (myFriends.includes(docSnap.id)) {
+        const eventName =
+          data.eventsAttended && data.eventsAttended.length > 0
+            ? data.eventsAttended[data.eventsAttended.length - 1].event
+            : "No recent event";
+
+        const card = document.createElement("div");
+        card.className = "card friend-card";
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <strong>${data.name || "Unnamed"}</strong>
+              <div style="color:#666;font-size:0.95rem;">Last event: ${eventName}</div>
+            </div>
+          </div>
+        `;
+
+        myFriendsEl.appendChild(card);
+      }
+    });
+  }
+    const myFriendsEl = document.getElementById('myFriendsList');
     document.addEventListener('DOMContentLoaded', () => {
       const suggestedEl = document.getElementById('suggestedFriends');
       const queryEl = document.getElementById('friendQuery');
@@ -144,6 +192,7 @@
           suggestedEl.innerHTML = '<p class="muted">No users found.</p>';
           return;
         }
+
         users.forEach(user => {
           const card = document.createElement('div');
           card.className = 'card friend-card';
@@ -171,7 +220,16 @@
             alert(user.name + " — past event: " + user.event);
           });
 
-          if (!auth.currentUser) {
+          // *** FIX #1: Persistent Following State ***
+          if (auth.currentUser) {
+            getDoc(doc(db, "Users", auth.currentUser.uid)).then(userSnap => {
+              const following = userSnap.exists() ? (userSnap.data().friends || []) : [];
+              if (following.includes(user.uid)) {
+                addBtn.disabled = true;
+                addBtn.textContent = "Following";
+              }
+            });
+          } else {
             addBtn.disabled = true;
             addBtn.textContent = "Login to Add";
           }
@@ -192,11 +250,13 @@
         if (e.key === 'Enter') { e.preventDefault(); performSearch(); }
       });
 
-      // Load all users on page load
-      (async () => {
+      // *** FIX #2: Wait for Firebase Auth before rendering ***
+      onAuthStateChanged(auth, async user => {
         allUsers = await getAllUsers();
         renderSuggested(allUsers);
-      })();
+        loadMyFriends();
+      });
+
     });
   </script>
 </body>
