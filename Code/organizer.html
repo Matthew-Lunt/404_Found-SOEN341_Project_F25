@@ -85,7 +85,11 @@
       <h3 style="margin:0 0 8px">Attendees</h3>
       <div class="table">
         <table id="tblA">
-          <thead><tr><th>Code</th><th>Event</th><th>Status</th><th>Issued</th><th>Checked In</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Code</th><th>Event</th><th>Status</th><th>Issued</th><th>Checked In</th>
+            </tr>
+          </thead>
           <tbody></tbody>
         </table>
       </div>
@@ -102,145 +106,238 @@
   </section>
 </div>
 
-<footer><p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound</p></footer>
+<footer>
+  <p style="text-align:center;margin:28px 0;color:#777">&copy; 2025 404TicketsFound</p>
+</footer>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  // Tabs handling
   document.querySelector('.tabs').addEventListener('click', e=>{
     if(!e.target.matches('.tab')) return;
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     e.target.classList.add('active');
-    const id=e.target.dataset.tab;
+    const id = e.target.dataset.tab;
     document.querySelectorAll('.panel').forEach(p=>p.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     if(id==='analytics') renderAnalytics();
     if(id==='checker') resizeFrame();
   });
 
-  const frame=document.getElementById('checkerFrame');
+  const frame = document.getElementById('checkerFrame');
   function resizeFrame(){
     try{
       const h = frame.contentDocument?.body?.scrollHeight || 900;
       frame.style.height = Math.max(h, 900)+'px';
-    }catch(_){ frame.style.height='900px' }
+    }catch(_){
+      frame.style.height='900px';
+    }
   }
   frame.addEventListener('load', resizeFrame);
 
-  const get=(k,f='[]')=>JSON.parse(localStorage.getItem(k)||f);
-  const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-  if(!localStorage.getItem('eventsCatalog')) set('eventsCatalog',[]);
-  if(!localStorage.getItem('attendees')) set('attendees',[]);
+  // Local helpers
+  const get = (k, f='[]') => JSON.parse(localStorage.getItem(k) || f);
+  const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-  // demo numbers similar to admin analytics
-  (function seedDemoIfEmptyPerEvent(){
+  // Make sure these keys exist
+  if(!localStorage.getItem('eventsCatalog')) set('eventsCatalog', []);
+  if(!localStorage.getItem('attendees')) set('attendees', []);
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
+    authDomain: "found-5ecc0.firebaseapp.com",
+    projectId: "found-5ecc0",
+    storageBucket: "found-5ecc0.appspot.com",
+    messagingSenderId: "160156481057",
+    appId: "1:160156481057:web:92b9f5569cdd89b0f3d560"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Load events from Firestore into localStorage "eventsCatalog"
+  async function syncEventsFromFirestore(){
+    try {
+      const snap = await getDocs(collection(db, "events"));
+      const list = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          title: data.description || data.title || "Untitled Event",
+          date: data.date || "",
+          capacity: data.capacity ?? null
+        };
+      });
+      set('eventsCatalog', list);
+    } catch (e) {
+      console.error("Failed to load events from Firestore for organizer dashboard:", e);
+    }
+  }
+
+  const evA   = document.getElementById('evA');
+  const dayA  = document.getElementById('dayA');
+  const clearA= document.getElementById('clearA');
+  const csvA  = document.getElementById('csvA');
+
+  const kIssued = document.getElementById('kIssued');
+  const kIn     = document.getElementById('kIn');
+  const kRate   = document.getElementById('kRate');
+  const kLeft   = document.getElementById('kLeft');
+  const tbodyA  = document.querySelector('#tblA tbody');
+
+  function capOf(name){
+    const e = get('eventsCatalog','[]').find(x=>x.title===name);
+    return e?.capacity ?? null;
+  }
+  function fmt(t){
+    if(!t) return '';
+    const d = new Date(t);
+    return d.toLocaleString();
+  }
+
+  function eventsList(){
     const cat = get('eventsCatalog','[]');
     const att = get('attendees','[]');
-    const have = new Set(att.map(a=>a.event));
-    const adminLike = {
-      "Rock Concert":{issued:12,checked:8},
-      "Food Festival":{issued:20,checked:17},
-      "Hockey Game":{issued:9,checked:0},
-      "Jazz Night":{issued:6,checked:5},
-      "Winter Carnival":{issued:30,checked:22}
-    };
-    const now=Date.now();
-    const add=[];
-    for(const ev of cat){
-      if(have.has(ev.title)) continue;
-      const s=adminLike[ev.title]; if(!s) continue;
-      const d=(ev.date||new Date().toISOString().slice(0,10));
-      for(let i=0;i<s.issued;i++){
-        const code=`TICKET-${String(i+1001).padStart(4,'0')}-${i%3?'PAID':'FREE'}`;
-        const ts=now-(s.issued-i)*3600_000;
-        const row={event:ev.title,code,status:'issued',tsIssued:ts,eventDate:d,capacity:ev.capacity??null};
-        if(i<s.checked){row.status='checked_in';row.tsCheckedIn=ts+15*60_000;}
-        add.push(row);
+    const map = new Map(cat.map(e => [e.title, e]));
+    att.forEach(a => {
+      if(!map.has(a.event)){
+        map.set(a.event, { title:a.event, date:a.eventDate||'', capacity:null });
       }
-    }
-    if(add.length) set('attendees',att.concat(add));
-  })();
-
-  const evA=document.getElementById('evA'), dayA=document.getElementById('dayA');
-  function eventsList(){
-    const cat=get('eventsCatalog','[]');
-    const att=get('attendees','[]');
-    const map=new Map(cat.map(e=>[e.title,e]));
-    att.forEach(a=>{ if(!map.has(a.event)) map.set(a.event,{title:a.event,date:a.eventDate||'',capacity:null}); });
+    });
     return [...map.values()].sort((a,b)=>a.title.localeCompare(b.title));
   }
+
   function buildSelect(){
-    const opts=eventsList().map(e=>`<option value="${e.title}">${e.title}</option>`).join('');
+    const opts = eventsList().map(e => `<option value="${e.title}">${e.title}</option>`).join('');
     evA.innerHTML = `<option value="">— Select an event —</option>${opts}`;
   }
-  buildSelect();
 
   function deleteEventByName(name){
-    const cat = get('eventsCatalog','[]').filter(e=>e.title!==name);
-    const pub = JSON.parse(localStorage.getItem('eventsPublic')||'[]').filter(e=>e.name!==name);
-    const att = get('attendees','[]').filter(a=>a.event!==name);
-    localStorage.setItem('eventsCatalog', JSON.stringify(cat));
-    localStorage.setItem('eventsPublic', JSON.stringify(pub));
-    localStorage.setItem('attendees', JSON.stringify(att));
+    const cat = get('eventsCatalog','[]').filter(e => e.title !== name);
+    const att = get('attendees','[]').filter(a => a.event !== name);
+    set('eventsCatalog', cat);
+    set('attendees', att);
   }
 
   document.getElementById('delA').onclick = ()=>{
     const name = evA.value;
-    if(!name) return alert('Pick an event first.');
-    if(!confirm(`Delete "${name}" and all its attendees?`)) return;
+    if(!name) {
+      alert('Pick an event first.');
+      return;
+    }
+    if(!confirm(`Delete "${name}" and all its attendees in this dashboard?`)) return;
     deleteEventByName(name);
     buildSelect();
     evA.value = '';
-    document.getElementById('dayA').value='';
-    // reset KPIs + table
-    document.getElementById('kIssued').textContent='0';
-    document.getElementById('kIn').textContent='0';
-    document.getElementById('kRate').textContent='0%';
-    document.getElementById('kLeft').textContent='—';
-    document.querySelector('#tblA tbody').innerHTML = `<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
-    alert('Event deleted.');
+    dayA.value = '';
+    kIssued.textContent='0';
+    kIn.textContent='0';
+    kRate.textContent='0%';
+    kLeft.textContent='—';
+    tbodyA.innerHTML = `<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
+    alert('Event removed from local dashboard data.');
   };
 
-  const clearA=document.getElementById('clearA'), csvA=document.getElementById('csvA');
-  const kIssued=document.getElementById('kIssued'), kIn=document.getElementById('kIn'), kRate=document.getElementById('kRate'), kLeft=document.getElementById('kLeft');
-  const tbodyA=document.querySelector('#tblA tbody');
-
-  function capOf(name){ const e=get('eventsCatalog','[]').find(x=>x.title===name); return e?.capacity??null }
-  function fmt(t){ if(!t) return ''; const d=new Date(t); return d.toLocaleString() }
-
   function renderAnalytics(){
-    const name=evA.value;
-    if(!name){ tbodyA.innerHTML=''; kIssued.textContent='0'; kIn.textContent='0'; kRate.textContent='0%'; kLeft.textContent='—'; return }
-    const all=get('attendees','[]').filter(a=>a.event===name);
-    const f=dayA.value? all.filter(a=>(a.eventDate||'').startsWith(dayA.value)) : all;
-    const issued=f.length, checked=f.filter(a=>a.status==='checked_in').length;
-    const rate=issued? Math.round(100*checked/issued):0;
-    const left=capOf(name)!=null? Math.max(capOf(name)-issued,0):'—';
-    kIssued.textContent=issued; kIn.textContent=checked; kRate.textContent=rate+'%'; kLeft.textContent=left;
-    tbodyA.innerHTML=f.map(a=>`
+    const name = evA.value;
+    if(!name){
+      tbodyA.innerHTML = `<tr><td colspan="5" class="hint">No event selected.</td></tr>`;
+      kIssued.textContent='0';
+      kIn.textContent='0';
+      kRate.textContent='0%';
+      kLeft.textContent='—';
+      return;
+    }
+
+    const all = get('attendees','[]').filter(a => a.event === name);
+    const filtered = dayA.value
+      ? all.filter(a => (a.eventDate || '').startsWith(dayA.value))
+      : all;
+
+    const issued = filtered.length;
+    const checked = filtered.filter(a => a.status === 'checked_in').length;
+    const rate = issued ? Math.round(100 * checked / issued) : 0;
+    const left = capOf(name) != null ? Math.max(capOf(name) - issued, 0) : '—';
+
+    kIssued.textContent = issued;
+    kIn.textContent     = checked;
+    kRate.textContent   = rate + '%';
+    kLeft.textContent   = left;
+
+    tbodyA.innerHTML = filtered.map(a => `
       <tr>
         <td style="font-family:ui-monospace,monospace">${a.code}</td>
         <td>${a.event}</td>
-        <td>${a.status==='checked_in'
-              ? '<span class="badge b-in">Checked-in</span>'
-              : '<span class="badge b-issued">Issued</span>'}</td>
+        <td>${
+          a.status === 'checked_in'
+            ? '<span class="badge b-in">Checked-in</span>'
+            : '<span class="badge b-issued">Issued</span>'
+        }</td>
         <td>${fmt(a.tsIssued)}</td>
         <td>${fmt(a.tsCheckedIn)}</td>
-      </tr>`).join('')||`<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
+      </tr>
+    `).join('') || `<tr><td colspan="5" class="hint">No attendees.</td></tr>`;
   }
 
-  evA.onchange=renderAnalytics; dayA.onchange=renderAnalytics; clearA.onclick=()=>{dayA.value=''; renderAnalytics()};
-  csvA.onclick=()=>{
-    const name=evA.value; if(!name) return alert('Pick an event first.');
-    const rows=[['Event','Code','Status','Issued At','Checked In At','Event Date','Capacity']];
-    const list=get('attendees','[]').filter(a=>a.event===name && (!dayA.value || (a.eventDate||'').startsWith(dayA.value)));
-    list.forEach(a=>rows.push([a.event,a.code,a.status,fmt(a.tsIssued),fmt(a.tsCheckedIn),a.eventDate||'',capOf(a.event)??'']));
-    const csv=rows.map(r=>r.map(v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v)).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download=(name.replace(/\s+/g,'_'))+'_attendees.csv'; a.click(); URL.revokeObjectURL(url);
+  evA.onchange   = renderAnalytics;
+  dayA.onchange  = renderAnalytics;
+  clearA.onclick = () => { dayA.value=''; renderAnalytics(); };
+
+  csvA.onclick = () => {
+    const name = evA.value;
+    if(!name){
+      alert('Pick an event first.');
+      return;
+    }
+    const rows = [['Event','Code','Status','Issued At','Checked In At','Event Date','Capacity']];
+    const list = get('attendees','[]').filter(a =>
+      a.event === name && (!dayA.value || (a.eventDate || '').startsWith(dayA.value))
+    );
+    list.forEach(a => {
+      rows.push([
+        a.event,
+        a.code,
+        a.status,
+        fmt(a.tsIssued),
+        fmt(a.tsCheckedIn),
+        a.eventDate || '',
+        capOf(a.event) ?? ''
+      ]);
+    });
+
+    const csv = rows.map(r =>
+      r.map(v => /[",\n]/.test(String(v))
+        ? `"${String(v).replace(/"/g,'""')}"`
+        : String(v)
+      ).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = (name.replace(/\s+/g,'_')) + '_attendees.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  (function(){
-    const p=new URLSearchParams(location.search); const ev=p.get('event');
-    if(ev){ const id=setInterval(()=>{ if(evA.options.length){ evA.value=ev; clearInterval(id); renderAnalytics(); }},40); }
+  (async function initOrganizer(){
+    await syncEventsFromFirestore();
+    buildSelect();
+
+    const p = new URLSearchParams(location.search);
+    const ev = p.get('event');
+    if(ev){
+      const id = setInterval(() => {
+        if(evA.options.length){
+          evA.value = ev;
+          clearInterval(id);
+          renderAnalytics();
+        }
+      }, 40);
+    }
   })();
 </script>
 </body>
