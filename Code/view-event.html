@@ -71,7 +71,7 @@
   <!-- friends attending card -->
   <div class="event-card">
     <h3>🧑‍🤝‍🧑 Friends Attending</h3>
-    <p id="friendsSummary" style="margin-bottom:10px; color:#666;">No friends attending yet.</p>
+    <p id="friendsSummary" style="margin-bottom:10px; color:#666;">Loading friends...</p>
     <ul id="friendsList" style="list-style:none; padding-left:0; margin:0;"></ul>
   </div>
 
@@ -92,7 +92,7 @@
   import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-  // Firebase config (same as SearchResults.html)
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyCdycuLXCIq2xr5zk2Snbw4cihQUR5vjY4",
     authDomain: "found-5ecc0.firebaseapp.com",
@@ -106,21 +106,19 @@
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // get event name from URL
   const p = new URLSearchParams(location.search);
   const eventName = p.get("event");
 
-  // elements
-  const nameEl   = document.getElementById("name");
-  const locEl    = document.getElementById("loc");
-  const orgEl    = document.getElementById("org");
-  const dateEl   = document.getElementById("date");
-  const priceEl  = document.getElementById("price");
+  const nameEl = document.getElementById("name");
+  const locEl = document.getElementById("loc");
+  const orgEl = document.getElementById("org");
+  const dateEl = document.getElementById("date");
+  const priceEl = document.getElementById("price");
   const mapFrame = document.getElementById("mapFrame");
   const openMapsBtn = document.getElementById("openMapsBtn");
 
   const friendsSummaryEl = document.getElementById("friendsSummary");
-  const friendsListEl    = document.getElementById("friendsList");
+  const friendsListEl = document.getElementById("friendsList");
 
   const fmtYMD = (s) => {
     if (!s) return "Not specified";
@@ -134,17 +132,14 @@
       const eventsCol = collection(db, "events");
       const snapshot = await getDocs(eventsCol);
 
-      const allEvents = snapshot.docs.map(docSnap => {
-        const data = docSnap.data();
+      const allEvents = snapshot.docs.map(doc => {
+        const data = doc.data();
         return {
           id: docSnap.id,
           name: data.description || "Unnamed Event",
           location: data.location || "TBA",
           organization: data.organization || "Organizer",
-          type: data.type || "Event",
           date: data.date || "",
-          start: data.start || "",
-          end: data.end || "",
           price: Number(data.price) || 0
         };
       });
@@ -159,10 +154,11 @@
         priceEl.textContent= "💵 Price: Not specified";
         mapFrame.src = "";
         openMapsBtn.disabled = true;
+        friendsSummaryEl.textContent = "No friends attending yet.";
         return;
       }
 
-      // fill event info
+      // Fill event info
       nameEl.textContent = ev.name;
       const locationText = ev.location || "TBA";
       locEl.textContent  = "📍 " + locationText;
@@ -170,61 +166,62 @@
       dateEl.textContent = "📅 " + (ev.date ? fmtYMD(ev.date) : "Not specified");
       priceEl.textContent= "💵 " + (ev.price === 0 ? "Free" : `$${ev.price}`);
 
-      // friends attending
-      onAuthStateChanged(auth, async user => {
-        if (!user) return;
-
-        // Load current user's friends
-        const meSnap = await getDoc(doc(db, "Users", user.uid));
-        const myFriends = meSnap.exists() ? (meSnap.data().friends || []) : [];
-
-        const attending = [];
-
-        // For each friend, check if they attended THIS event
-        for (const friendUID of myFriends) {
-          const friendSnap = await getDoc(doc(db, "Users", friendUID));
-          if (!friendSnap.exists()) continue;
-
-          const friendData = friendSnap.data();
-          const attended = friendData.eventsAttended || [];
-
-          if (attended.some(e => e.event === ev.name)) {
-            attending.push(friendData.name || "Unknown");
-          }
-        }
-
-        // Render UI
-        if (attending.length === 0) {
-          friendsSummaryEl.textContent = "No friends attending yet.";
-          friendsListEl.innerHTML = "";
-        } else {
-          friendsSummaryEl.textContent =
-            attending.length === 1
-              ? `${attending[0]} is attending`
-              : `${attending.length} friends are attending`;
-
-          friendsListEl.innerHTML = attending
-            .map(f => `<li class="friend-pill">${f}</li>`)
-            .join("");
-        }
-      });
-
-      // Map
+      // Map setup
       const mapURL = "https://www.google.com/maps?q=" + encodeURIComponent(locationText) + "&output=embed";
       mapFrame.src = mapURL;
-
       openMapsBtn.onclick = () => {
         window.open("https://www.google.com/maps?q=" + encodeURIComponent(locationText), "_blank");
       };
 
+      // --- Load friends attending ---
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          friendsSummaryEl.textContent = "Login to see which friends are attending.";
+          friendsListEl.innerHTML = "";
+          return;
+        }
+
+        const userSnap = await getDoc(doc(db, "Users", user.uid));
+        const friendsIds = userSnap.data().friends || [];
+
+        if (friendsIds.length === 0) {
+          friendsSummaryEl.textContent = "You have no friends added yet.";
+          friendsListEl.innerHTML = "";
+          return;
+        }
+
+        const friendsData = [];
+        for (const fid of friendsIds) {
+          const friendSnap = await getDoc(doc(db, "Users", fid));
+          if (friendSnap.exists()) {
+            const friend = friendSnap.data();
+            const eventsAttended = friend.eventsAttended || [];
+            const attended = eventsAttended.some(e => (e.event || "") === ev.name);
+            if (attended) friendsData.push(friend.name);
+          }
+        }
+
+        if (friendsData.length === 0) {
+          friendsSummaryEl.textContent = "No friends attending yet.";
+          friendsListEl.innerHTML = "";
+        } else {
+          friendsSummaryEl.textContent =
+            friendsData.length === 1
+              ? `${friendsData[0]} is attending`
+              : `${friendsData.length} friends are attending`;
+
+          friendsListEl.innerHTML = friendsData.map(f => `<li class="friend-pill">${f}</li>`).join("");
+        }
+      });
+
     } catch (err) {
       console.error("Error loading event:", err);
       nameEl.textContent = "Error loading event";
+      friendsSummaryEl.textContent = "";
     }
   }
 
   loadEvent();
 </script>
-
 </body>
 </html>

@@ -209,61 +209,61 @@
             color: #666;
         }
     </style>
-    <script src="JS/nav.js" defer></script> 
+    <script src="JS/nav.js" defer></script>
 </head>
 
 <body>
-<header>
-  <div class="container header-content">
-    <h1 class="logo"><a href="index.html">404TicketsFound </a></h1>
-    <nav id="nav-container">   
-        <a href="SearchResults.html">Search</a>
-        <a href="AddFriend.html"> Add Friend </a> 
-    </nav>
-  </div>
-</header>
+    <header>
+        <div class="container header-content">
+            <h1 class="logo"><a href="index.html">404TicketsFound </a></h1>
+            <nav id="nav-container">
+                <a href="SearchResults.html">Search</a>
+                <a href="AddFriend.html"> Add Friend </a>
+            </nav>
+        </div>
+    </header>
 
-<script>
-(function(){
-  const nav = document.getElementById('nav-container');
-  if (!nav) return;
+    <script>
+        (function () {
+            const nav = document.getElementById('nav-container');
+            if (!nav) return;
 
-  nav.querySelectorAll('.auth-ui').forEach(el => el.remove());
-  const auth = JSON.parse(localStorage.getItem('auth') || 'null');
-  const span = document.createElement('span');
-  span.className = 'auth-ui';
-  span.style.marginLeft = '12px';
+            nav.querySelectorAll('.auth-ui').forEach(el => el.remove());
+            const auth = JSON.parse(localStorage.getItem('auth') || 'null');
+            const span = document.createElement('span');
+            span.className = 'auth-ui';
+            span.style.marginLeft = '12px';
 
-  if (auth) {
-    let extraLink = '';
-    if (auth.role === 'organizer') {
-      extraLink = `<a href="organizer.html" class="btn-secondary" style="margin-left:8px;">Dashboard</a>`;
-    } else if (auth.role === 'user') {
-      extraLink = `<a href="user.html" class="btn-secondary" style="margin-left:8px;">My Profile</a>`;
-    }
+            if (auth) {
+                let extraLink = '';
+                if (auth.role === 'organizer') {
+                    extraLink = `<a href="organizer.html" class="btn-secondary" style="margin-left:8px;">Dashboard</a>`;
+                } else if (auth.role === 'user') {
+                    extraLink = `<a href="user.html" class="btn-secondary" style="margin-left:8px;">My Profile</a>`;
+                }
 
-    span.innerHTML = `
+                span.innerHTML = `
       <span style="padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:.9rem;">
         ${auth.role?.toUpperCase() || 'USER'}
       </span>
       ${extraLink}
       <button id="logoutBtn" class="btn-secondary" style="margin-left:8px;">Logout</button>`;
-  } else {
-    span.innerHTML = `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
-  }
+            } else {
+                span.innerHTML = `<a href="404NotFoundLogin.html" class="btn-secondary">Login</a>`;
+            }
 
-  nav.appendChild(span);
+            nav.appendChild(span);
 
-  nav.addEventListener('click', e => {
-    if (e.target.id === 'logoutBtn') {
-      e.preventDefault();
-      localStorage.removeItem('auth');
-      alert('Logged out.');
-      location.href = 'index.html';
-    }
-  });
-})();
-</script>
+            nav.addEventListener('click', e => {
+                if (e.target.id === 'logoutBtn') {
+                    e.preventDefault();
+                    localStorage.removeItem('auth');
+                    alert('Logged out.');
+                    location.href = 'index.html';
+                }
+            });
+        })();
+    </script>
 
     <section class="section container">
         <h2 class="section-title">My Profile</h2>
@@ -402,7 +402,7 @@
         const auth = getAuth(app);
         const nameEl = document.getElementById('user-name');
         const emailEl = document.getElementById('user-email');
-        
+
         // Modal elements
         const modal = document.getElementById('edit-profile-modal');
         const editBtn = document.getElementById('edit-profile-btn');
@@ -428,9 +428,9 @@
                     const data = snap.data();
                     nameEl.textContent = data.name || 'No name set';
                     emailEl.textContent = data.email || 'No email set';
-                    
+
                     // Load friends list
-                    await loadFriendsList(uid, data.friends || []);
+                    await loadFriendsList(currentUser.uid);
                 } else {
                     nameEl.textContent = 'Profile not found';
                     emailEl.textContent = '';
@@ -447,7 +447,7 @@
             if (user) {
                 currentUser = user;
                 await loadUserProfile(user.uid);
-                
+
                 // Set up auto-refresh every 3 seconds
                 if (refreshInterval) clearInterval(refreshInterval);
                 refreshInterval = setInterval(async () => {
@@ -456,7 +456,8 @@
                             const snap = await getDoc(doc(db, currentCollection, currentUser.uid));
                             if (snap.exists()) {
                                 const data = snap.data();
-                                await loadFriendsList(currentUser.uid, data.friends || []);
+                                await loadFriendsList(currentUser.uid);
+
                             }
                         } catch (err) {
                             console.error('Error refreshing friends:', err);
@@ -473,7 +474,7 @@
         // Modal open
         editBtn.addEventListener('click', async () => {
             if (!currentUser) return;
-            
+
             try {
                 const snap = await getDoc(doc(db, currentCollection, currentUser.uid));
                 if (snap.exists()) {
@@ -506,7 +507,7 @@
         // Form submit
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             if (!currentUser) return;
 
             const newName = editNameInput.value.trim();
@@ -529,75 +530,60 @@
         });
 
         // Load friends list
-        async function loadFriendsList(uid, followingIds) {
+        async function loadFriendsList(uid) {
             const friendsList = document.getElementById('friends-list');
+            const userRef = doc(db, 'Users', uid);
+            const userSnap = await getDoc(userRef);
 
-            if (!followingIds || followingIds.length === 0) {
-                friendsList.innerHTML = '<p class="empty-state">You are not following anyone yet. Visit the Add Friend page to find friends!</p>';
+            if (!userSnap.exists()) {
+                friendsList.innerHTML = '<p class="empty-state">Error loading friends.</p>';
                 return;
             }
 
-            try {
-                const friendsData = [];
-                
-                // Fetch each friend's data
-                for (const friendId of followingIds) {
-                    try {
-                        const friendSnap = await getDoc(doc(db, 'Users', friendId));
-                        if (friendSnap.exists()) {
-                            friendsData.push({
-                                id: friendId,
-                                ...friendSnap.data()
-                            });
-                        }
-                    } catch (err) {
-                        console.error('Error fetching friend:', friendId, err);
-                    }
-                }
+            const friendsIds = userSnap.data().friends || [];
 
-                if (friendsData.length === 0) {
-                    friendsList.innerHTML = '<p class="empty-state">No friends found.</p>';
-                    return;
-                }
-
-                friendsList.innerHTML = '';
-                
-                friendsData.forEach(friend => {
-                    const friendCard = document.createElement('div');
-                    friendCard.className = 'friend-card';
-                    friendCard.innerHTML = `
-                        <h4>${friend.name || 'Unknown'}</h4>
-                        <p>${friend.email || ''}</p>
-                        <button class="unfollow-btn" data-friend-id="${friend.id}">Unfollow</button>
-                    `;
-                    friendsList.appendChild(friendCard);
-                });
-                // If user not found in Users, check Organizers collection
-if (!friendSnap.exists()) {
-    const orgSnap = await getDoc(doc(db, 'Organizers', friendId));
-    if (orgSnap.exists()) {
-        friendsData.push({
-            id: friendId,
-            ...orgSnap.data()
-        });
-    }
-}
-
-
-                // Add unfollow functionality
-                document.querySelectorAll('.unfollow-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const friendId = e.target.dataset.friendId;
-                        if (confirm('Are you sure you want to unfollow this user?')) {
-                            await unfollowUser(uid, friendId);
-                        }
-                    });
-                });
-
-            } catch (err) {
-                console.error('Error loading friends:', err);
-                friendsList.innerHTML = '<p class="empty-state">Error loading friends list.</p>';
+            if (friendsIds.length === 0) {
+                friendsList.innerHTML = '<p class="empty-state">You have no friends yet. Go add some!</p>';
+                return;
             }
+
+            const friendsData = [];
+
+            // Fetch friend info
+            for (const fid of friendsIds) {
+                try {
+                    const friendSnap = await getDoc(doc(db, 'Users', fid));
+                    if (friendSnap.exists()) {
+                        friendsData.push({ id: fid, ...friendSnap.data() });
+                    }
+                } catch (err) {
+                    console.error('Error fetching friend:', fid, err);
+                }
+            }
+
+            // Render friends
+            friendsList.innerHTML = '';
+            friendsData.forEach(friend => {
+                const div = document.createElement('div');
+                div.className = 'friend-card';
+                div.innerHTML = `
+            <h4>${friend.name}</h4>
+            <p>${friend.email || ''}</p>
+            <button class="unfollow-btn" data-id="${friend.id}">Unfollow</button>
+        `;
+                friendsList.appendChild(div);
+            });
+
+            // Unfollow buttons
+            document.querySelectorAll('.unfollow-btn').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const fid = e.target.dataset.id;
+                    if (confirm('Are you sure you want to unfollow this friend?')) {
+                        await updateDoc(userRef, { friends: friendsIds.filter(id => id !== fid) });
+                        loadFriendsList(uid); // refresh list
+                    }
+                });
+            });
         }
 
         // Unfollow user
@@ -605,17 +591,17 @@ if (!friendSnap.exists()) {
             try {
                 const userRef = doc(db, 'Users', uid);
                 const userSnap = await getDoc(userRef);
-                
+
                 if (userSnap.exists()) {
                     const following = userSnap.data().following || [];
                     const updatedFollowing = following.filter(id => id !== friendId);
-                    
+
                     await updateDoc(userRef, {
                         following: updatedFollowing
                     });
 
                     // Reload friends list
-                    await loadFriendsList(uid, updatedFollowing);
+                    await loadFriendsList(currentUser.uid);
                     alert('User unfollowed successfully!');
                 }
             } catch (err) {
@@ -625,4 +611,5 @@ if (!friendSnap.exists()) {
         }
     </script>
 </body>
+
 </html>
