@@ -7,5 +7,5 @@ I added a My Friends section, including direct “View” links. I also made sur
 • Pawan Kumar Gupta:  I added functionality for the "edit Profile" button for user to edit their username or email. I assisted with informal testing and identifying minor issues during development. I contributed to debugging sessions, answered questions related to implementation details, and reviewed parts of teammates’ work to ensure consistency.
 • Zeynep Ozcan:
 • Shadman Chowdhury: I worked on the "event view" page where I transferred the event details onto the page and implemented a map showing the city where the event takes place in. I fixed a bug in "search friend" feature. I created a task and discussed others with teammates.
-• Gracie Idonije: 
+• Gracie Idonije: I helped with testing and quality assurance, verifying UI behaviour, validating user flows, and ensuring that implemented features worked as expected across different pages.
 • Joshua Vilda: I worked on the Friend Page creatint the tmeplate with hard coded users to be used as a placeholder until it is linked to the backend, I standardized the navigation menu easing the use of our page some functionalities were missing/didnt follow the convention on other pages. Aided Zeynep in linking the backend with the user page to display the correct email and username.
